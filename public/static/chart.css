@@ -1,0 +1,409 @@
+:root {
+  --tv-color-platform-background: #101015;
+  --tv-color-pane-background: #101015;
+  --tv-color-pane-background-secondary: #1b1d22;
+  --tv-color-toolbar-button-background-hover: #1b1d22;
+  --tv-color-toolbar-button-background-secondary-hover: red;
+  --tv-color-toolbar-button-background-expanded: #1b1d22;
+  --tv-color-toolbar-button-text: rgba(255, 255, 255, 0.95);
+  --tv-color-toolbar-button-text-hover: #836ef9;
+  --tv-color-toolbar-button-text-active: #836ef9;
+  --tv-color-toolbar-button-text-active-hover: #836ef9;
+  --tv-color-item-active-text: #836ef9;
+  --tv-color-toolbar-toggle-button-background-active: #1b1d22;
+  --tv-color-toolbar-toggle-button-background-active-hover: #1b1d22;
+
+  --tv-color-popup-background: rgb(241, 188, 225);
+  --tv-color-popup-element-text: rgb(136, 24, 79);
+  --tv-color-popup-element-text-hover: rgb(74, 20, 140);
+  --tv-color-popup-element-background-hover: rgb(244, 143, 177);
+  --tv-color-popup-element-divider-background: rgb(251, 223, 244);
+  --tv-color-popup-element-secondary-text: rgb(74, 20, 140);
+  --tv-color-popup-element-hint-text: rgb(74, 20, 140);
+  --tv-color-popup-element-text-active: rgb(6, 6, 255);
+  --tv-color-popup-element-background-active: red;
+  --tv-color-popup-element-toolbox-text: rgb(136, 24, 79);
+  --tv-color-popup-element-toolbox-text-hover: rgb(74, 20, 140);
+  --tv-color-popup-element-toolbox-text-active-hover: rgb(74, 20, 140);
+  --tv-color-popup-element-toolbox-background-hover: rgb(222, 89, 132);
+  --tv-color-popup-element-toolbox-background-active-hover: magenta;
+}
+
+.tv-floating-toolbar,
+.tvcolorpicker-popup,
+.chart-popup,
+.tv-dialog,
+.tv-dropdown-behavior,
+._tv-dialog,
+.js-dialog,
+.tv-floating-panel,
+.context-menu,
+.tv-contextmenu,
+.tv-tooltip-wrapper,
+.tv-tooltip {
+  background-color: #101015 !important;
+  border-color: #2a2e39 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Styles de texte pour tous les éléments */
+.tv-floating-toolbar *,
+.tvcolorpicker-popup *,
+.chart-popup *,
+.tv-dialog *,
+.tv-dropdown-behavior *,
+._tv-dialog *,
+.js-dialog *,
+.tv-floating-panel *,
+.context-menu *,
+.tv-contextmenu *,
+.tv-tooltip-wrapper *,
+.tv-tooltip * {
+  color: white !important;
+}
+
+/* Styles spécifiques pour les éléments de formulaire */
+.tv-dialog input[type="text"],
+.tv-dialog input[type="number"],
+.tv-dialog select,
+.tv-dialog textarea {
+  background-color: #2a2e39 !important;
+  border-color: #363c4e !important;
+  color: white !important;
+}
+
+/* Styles pour les boutons */
+.tv-button,
+.button,
+.tv-dialog__button {
+  background-color: #2a2e39 !important;
+  border-color: #363c4e !important;
+  color: white !important;
+}
+
+.tv-button:hover,
+.button:hover,
+.tv-dialog__button:hover {
+  background-color: #363c4e !important;
+  color: #836ef9 !important;
+}
+
+/* Styles pour les en-têtes de popup */
+.tv-dialog__title,
+._tv-dialog-title {
+  background-color: #2a2e39 !important;
+  color: white !important;
+}
+
+/* Styles pour les éléments de liste dans les menus déroulants */
+.tv-dropdown-behavior__item:hover,
+.tv-contextmenu__item:hover {
+  background-color: #363c4e !important;
+  color: #836ef9 !important;
+}
+
+/* Styles pour les séparateurs */
+.tv-dialog__separator,
+.tv-dropdown-behavior__separator,
+.tv-contextmenu__separator {
+  background-color: #363c4e !important;
+}
+
+/* Styles pour les scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #363c4e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #454b5e;
+}
+
+/* Styles pour les tooltips */
+.tv-tooltip {
+  background-color: #101015 !important;
+  border-color: #2a2e39 !important;
+  color: white !important;
+}
+
+/* Styles pour les éléments sélectionnés ou actifs */
+.tv-floating-toolbar__widget--active,
+.tv-dropdown-behavior__item--active,
+.tv-contextmenu__item--active {
+  background-color: #363c4e !important;
+  color: #836ef9 !important;
+}
+
+/* Styles pour les icônes */
+.tv-floating-toolbar__icon,
+.tv-dialog__icon,
+.tv-contextmenu__icon {
+  fill: white !important;
+}
+
+.tv-floating-toolbar__icon:hover,
+.tv-dialog__icon:hover,
+.tv-contextmenu__icon:hover {
+  fill: #836ef9 !important;
+}
+
+/* Styles de base pour la popup des indicateurs */
+.tv-dialog--popup.js-dialog-indicator-dialog,
+.tv-dialog__modal-wrap--popup.js-dialog-indicator-dialog {
+  background-color: #101015 !important;
+  border-color: #2a2e39 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Styles pour l'en-tête de la popup */
+.tv-dialog__title.js-dialog-title {
+  background-color: #2a2e39 !important;
+  color: white !important;
+}
+
+/* Styles pour la barre de recherche des indicateurs */
+.tv-search-row {
+  background-color: #2a2e39 !important;
+}
+
+.tv-search-row__input {
+  background-color: #363c4e !important;
+  color: white !important;
+  border-color: #454b5e !important;
+}
+
+/* Styles pour la liste des indicateurs */
+.tv-dialog__section--dialog-tabbed-indicators {
+  background-color: #101015 !important;
+}
+
+.tv-dialog__tab {
+  color: white !important;
+}
+
+.tv-dialog__tab--active,
+.tv-dialog__tab:hover {
+  color: #836ef9 !important;
+  border-bottom-color: #836ef9 !important;
+}
+
+/* Styles pour les éléments de la liste d'indicateurs */
+.tv-dialog__scroll-wrap .tv-category-item {
+  background-color: #101015 !important;
+  border-color: #2a2e39 !important;
+}
+
+.tv-dialog__scroll-wrap .tv-category-item:hover {
+  background-color: #2a2e39 !important;
+}
+
+.tv-category-item__title {
+  color: white !important;
+}
+
+/* Styles pour les boutons d'action des indicateurs */
+.tv-dialog__scroll-wrap .tv-category-item__action {
+  background-color: #363c4e !important;
+  color: white !important;
+}
+
+.tv-dialog__scroll-wrap .tv-category-item__action:hover {
+  background-color: #454b5e !important;
+  color: #836ef9 !important;
+}
+
+/* Styles pour la section de configuration des indicateurs */
+.tv-dialog__section--dialog-indicator-settings {
+  background-color: #101015 !important;
+}
+
+.tv-dialog__section--dialog-indicator-settings input[type="text"],
+.tv-dialog__section--dialog-indicator-settings input[type="number"],
+.tv-dialog__section--dialog-indicator-settings select {
+  background-color: #2a2e39 !important;
+  color: white !important;
+  border-color: #363c4e !important;
+}
+
+/* Styles pour les boutons de la popup */
+.tv-dialog__button-wrap .tv-button {
+  background-color: #2a2e39 !important;
+  color: white !important;
+  border-color: #363c4e !important;
+}
+
+.tv-dialog__button-wrap .tv-button:hover {
+  background-color: #363c4e !important;
+  color: #836ef9 !important;
+}
+
+/* Styles pour les tooltips dans la popup des indicateurs */
+.tv-dialog__tooltip {
+  background-color: #2a2e39 !important;
+  color: white !important;
+  border-color: #363c4e !important;
+}
+
+/* Styles pour la barre de défilement dans la liste des indicateurs */
+.tv-dialog__scroll-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tv-dialog__scroll-wrap::-webkit-scrollbar-thumb {
+  background-color: #363c4e !important;
+  border-radius: 4px;
+}
+
+.tv-dialog__scroll-wrap::-webkit-scrollbar-thumb:hover {
+  background-color: #454b5e !important;
+}
+
+/* Styles pour les icônes dans la popup des indicateurs */
+.tv-dialog__section--dialog-tabbed-indicators svg,
+.tv-category-item__icon svg {
+  fill: white !important;
+}
+
+.tv-dialog__section--dialog-tabbed-indicators svg:hover,
+.tv-category-item__icon:hover svg {
+  fill: #836ef9 !important;
+}
+
+.tv-dialog--popup {
+  background-color: #ff00ff !important;
+}
+.tv-dialog__title {
+  color: #d1d4dc !important;
+}
+.tv-search-row {
+  background-color: #ff0000 !important;
+}
+.tv-search-row__input {
+  color: #d1d4dc !important;
+}
+.tv-category-item {
+  background-color: #2a2e39 !important;
+  color: #d1d4dc !important;
+}
+
+/* INDICATOR MODAL START */
+
+.dialog-2AogBbC7.dialog-2cMrvu9r.dialogLibrary-3kc5LZDR.dialog-UM6w7sFp.rounded-UM6w7sFp.shadowed-UM6w7sFp {
+  background-color: #101015 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+  box-shadow: 0 4px 20px #101015 !important;
+  border-radius: 10px;
+}
+
+/* HOVER ELEMENT OF LIST */
+.container-3Ywm3-oo:hover {
+  background-color: #836ef9 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* INPUT CONTAINER */
+.container-3n5_2-hI {
+  border-top: 1px solid rgba(200, 200, 200, 0.2) !important;
+  border-bottom: 1px solid rgba(200, 200, 200, 0.2) !important;
+}
+
+/* TITLE */
+.ellipsis-2sL5JydP {
+  color: #fff !important;
+}
+
+/* INDICATOR MODAL END */
+
+/* TIMEFRAME START */
+
+.menuWrap-g78rwseC {
+  background-color: #101015 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+  box-shadow: 0 4px 20px #101015 !important;
+  border-radius: 10px;
+}
+
+.item-2IihgTnv {
+  background-color: #101015 !important;
+}
+
+.item-2IihgTnv:hover {
+  background-color: #1b1d22 !important;
+}
+
+.isActive-2IihgTnv {
+  background-color: #836ef9 !important;
+}
+
+/* FAVORITES  */
+.toolbox-2IihgTnv:hover {
+  background-color: transparent !important;
+}
+
+.toolbox-2IihgTnv {
+  background-color: transparent !important;
+}
+
+.favorite-I_fAY9V2 .apply-common-tooltip .active-I_fAY9V2 {
+  background-color: transparent !important;
+}
+
+/* TIMEFRAME END */
+
+/*  CHART SETTINGS */
+
+.dialog-2AogBbC7 {
+  background-color: #101015 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+  border-radius: 10px;
+}
+
+.active-DggvOZTm {
+  background-color: #836ef9 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+}
+
+.box-2eXD4rIf {
+  background-color: #836ef9 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+}
+
+.box-2eXD4rIf:before {
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+}
+
+.variant-primary-xRobF0EE {
+  background-color: #836ef9 !important;
+  border: 1px solid rgba(200, 200, 200, 0.2) !important;
+}
+
+.variant-secondary-xRobF0EE {
+  border: 1px solid #836ef9 !important;
+  color: #836ef9 !important;
+}
+
+.container-QDd7xRJ1.focused-QDd7xRJ1 {
+  border: 1px solid #836ef9 !important;
+}
+
+.container-QDd7xRJ1.intent-primary-QDd7xRJ1 {
+  border: 1px solid #836ef9 !important;
+}
+/* box-2eXD4rIf check-2eXD4rIf */
+
+.tv-header__indicators-text {
+  display: none;
+}
+/* ou */
+[data-name="indicators"] span {
+  display: none;
+}
+/* ou */
+.js-indicators-text {
+  display: none;
+}
