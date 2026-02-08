@@ -12,6 +12,7 @@ import ChatPanel from './ChatPanel';
 import TokenInfo from './TokenInfo';
 import TradePanel from './TradePanel';
 import BotPositions from './BotPositions';
+import Predictions from './Predictions';
 
 // ============================================================
 // BOT CONFIG
@@ -193,20 +194,24 @@ export function TradingTerminal({
         {/* Right sidebar */}
         <div className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]">
           {/* Token Info */}
-          <TokenInfo 
+          {/* <TokenInfo 
             token={chartToken} 
             isActive={!!currentToken}
             className="p-4 border-b border-zinc-800" 
-          />
+          /> */}
 
           {/* Trade Panel */}
-          <TradePanel 
+          {/* <TradePanel 
             token={currentToken} 
             className="p-4 border-b border-zinc-800" 
-          />
+          /> */}
 
           {/* Bot Positions */}
-        
+        <Predictions 
+          token={currentToken}
+          botConfig={BOT_CONFIG}
+          className=""
+        />
         </div>
       </div>
 
