@@ -277,15 +277,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="text-center">
-        <h3 className="text-lg font-bold text-white mb-1">
-          Buy {tokenInfo?.symbol || 'Token'}
-        </h3>
-        <p className="text-xs text-zinc-500">
-          Purchase tokens to participate in this prediction
-        </p>
-      </div>
+     
 
       {/* From: MON */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
@@ -305,12 +297,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
             min="0"
             step="0.1"
           />
-          <div className="flex items-center gap-2 bg-zinc-800 px-3 py-1.5 rounded-lg">
-            <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold">
-              M
-            </div>
-            <span className="text-white font-medium">MON</span>
-          </div>
+         
         </div>
         {/* Quick amounts */}
         <div className="flex gap-2 mt-2">
@@ -320,7 +307,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
               onClick={() => setAmount(val.toString())}
               className={`px-3 py-1 rounded text-xs transition-all ${
                 amount === val.toString()
-                  ? 'bg-purple-500 text-white'
+                  ? 'bg-white text-black'
                   : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
               }`}
             >
@@ -336,12 +323,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
         </div>
       </div>
 
-      {/* Arrow */}
-      <div className="flex justify-center">
-        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-          <ArrowDown className="w-4 h-4 text-zinc-400" />
-        </div>
-      </div>
+    
 
       {/* To: Token */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
@@ -359,7 +341,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
             {tokenInfo?.image ? (
               <img src={tokenInfo.image} alt="" className="w-6 h-6 rounded-full" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-500 flex items-center justify-center text-xs font-bold">
                 {tokenInfo?.symbol?.charAt(0) || '?'}
               </div>
             )}
@@ -389,7 +371,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
           w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2
           ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
             ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-            : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/25'
+            : 'bg-gradient-to-r from-white to-white hover:from-white hover:to-white text-black '
           }
         `}
       >
@@ -407,7 +389,6 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
           'Insufficient balance'
         ) : (
           <>
-            <Coins className="w-4 h-4" />
             Buy {tokenInfo?.symbol || 'Token'}
           </>
         )}

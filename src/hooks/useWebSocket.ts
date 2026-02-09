@@ -1,18 +1,26 @@
 'use client';
 
 // ============================================================
-// WEBSOCKET HOOK — Connects to backend WebSocket
+// WEBSOCKET HOOK — Unified WebSocket connection
 // ============================================================
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-interface WebSocketMessage {
+export interface WebSocketMessage {
   type: string;
   data: any;
   timestamp?: string;
 }
 
-export function useWebSocket(url: string) {
+interface UseWebSocketOptions {
+  onMessage?: (message: WebSocketMessage) => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+}
+
+export function useWebSocket(url?: string, options?: UseWebSocketOptions) {
+  const wsUrl = url || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+  
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,20 +33,30 @@ export function useWebSocket(url: string) {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     try {
-      console.log('🔌 Connecting to WebSocket:', url);
-      const ws = new WebSocket(url);
+      console.log('🔌 Connecting to WebSocket:', wsUrl);
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('✅ WebSocket connected');
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
+        options?.onConnect?.();
       };
 
       ws.onmessage = (event) => {
         try {
-          const message = JSON.parse(event.data);
+          const message: WebSocketMessage = JSON.parse(event.data);
+          
+          // Debug log
+          if (message.type === 'message') {
+            console.log('📨 Chat message from', message.data?.botId, ':', message.data?.content?.substring?.(0, 50));
+          } else {
+            console.log('📨 WS Event:', message.type);
+          }
+          
           setLastMessage(message);
+          options?.onMessage?.(message);
         } catch (e) {
           console.error('Failed to parse WebSocket message:', e);
         }
@@ -53,6 +71,7 @@ export function useWebSocket(url: string) {
         console.log('🔌 WebSocket closed:', event.code, event.reason);
         setIsConnected(false);
         wsRef.current = null;
+        options?.onDisconnect?.();
 
         // Attempt to reconnect with exponential backoff
         if (reconnectAttempts.current < 10) {
@@ -73,7 +92,7 @@ export function useWebSocket(url: string) {
       console.error('Failed to create WebSocket:', e);
       setError('Failed to connect');
     }
-  }, [url]);
+  }, [wsUrl]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -89,9 +108,9 @@ export function useWebSocket(url: string) {
     setIsConnected(false);
   }, []);
 
-  const send = useCallback((data: any) => {
+  const send = useCallback((type: string, data: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(data));
+      wsRef.current.send(JSON.stringify({ type, data }));
     } else {
       console.warn('WebSocket not connected, cannot send message');
     }
@@ -101,7 +120,7 @@ export function useWebSocket(url: string) {
   useEffect(() => {
     connect();
     return () => disconnect();
-  }, [connect, disconnect]);
+  }, []);
 
   return {
     isConnected,

@@ -61,9 +61,18 @@ export const useCouncilStore = create<CouncilState>((set) => ({
   // Trades
   trades: [],
   addTrade: (trade) =>
-    set((state) => ({
-      trades: [trade, ...state.trades.slice(0, 49)], // Keep last 50
-    })),
+    set((state) => {
+      // Check if trade already exists
+      const existingIndex = state.trades.findIndex(t => t.id === trade.id);
+      if (existingIndex >= 0) {
+        // Update existing trade
+        const newTrades = [...state.trades];
+        newTrades[existingIndex] = trade;
+        return { trades: newTrades };
+      }
+      // Add new trade at the beginning
+      return { trades: [trade, ...state.trades.slice(0, 49)] };
+    }),
   updateTrade: (id, updates) =>
     set((state) => ({
       trades: state.trades.map((t) =>

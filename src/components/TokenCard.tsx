@@ -72,7 +72,7 @@ export function TokenCard() {
 
       {/* Price */}
       <div className="mb-4">
-        <p className="text-3xl font-mono font-bold text-white">
+        <p className="text-3xl font-poppins font-bold text-white">
           ${formatPrice(token.price)}
         </p>
         <p className={`text-sm ${token.priceChange24h >= 0 ? 'text-accent-green' : 'text-accent-red'}`}>
@@ -87,7 +87,7 @@ export function TokenCard() {
             <TrendingUp size={14} />
             <span>MCap</span>
           </div>
-          <p className="font-mono font-bold text-white">
+          <p className="font-poppins font-bold text-white">
             ${formatNumber(token.mcap)}
           </p>
         </div>
@@ -96,7 +96,7 @@ export function TokenCard() {
             <Droplets size={14} />
             <span>Liquidity</span>
           </div>
-          <p className="font-mono font-bold text-white">
+          <p className="font-poppins font-bold text-white">
             ${formatNumber(token.liquidity)}
           </p>
         </div>
@@ -105,7 +105,7 @@ export function TokenCard() {
             <Users size={14} />
             <span>Holders</span>
           </div>
-          <p className="font-mono font-bold text-white">
+          <p className="font-poppins font-bold text-white">
             {token.holders}
           </p>
         </div>

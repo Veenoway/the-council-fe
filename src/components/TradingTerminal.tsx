@@ -13,6 +13,11 @@ import TokenInfo from './TokenInfo';
 import TradePanel from './TradePanel';
 import BotPositions from './BotPositions';
 import Predictions from './Predictions';
+import { ConnectWalletButton } from './ConnectWalletButton';
+import { useAccount } from 'wagmi';
+import { TokenHistory } from './TokenHistory';
+import { LiveTrades } from './LiveTrades';
+import RightSidebar from './RightBar';
 
 // ============================================================
 // BOT CONFIG
@@ -50,7 +55,7 @@ export function TradingTerminal({
   const [trades, setTrades] = useState<Trade[]>([]);
   const [verdict, setVerdict] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
-
+  const { address } = useAccount();
   // WebSocket connection
   const { isConnected, lastMessage } = useWebSocket(
     process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'
@@ -154,7 +159,7 @@ export function TradingTerminal({
 
         {/* Links */}
         <div className="flex items-center gap-3">
-          {chartToken && (
+          {chartToken && address ?  (
             <a
               href={`https://nad.fun/token/${chartToken.address}`}
               target="_blank"
@@ -163,6 +168,8 @@ export function TradingTerminal({
             >
               nad.fun <span className="text-xs">↗</span>
             </a>
+          ) : (
+                  <ConnectWalletButton />
           )}
         </div>
       </header>
@@ -191,29 +198,28 @@ export function TradingTerminal({
           />
         </div>
 
-        {/* Right sidebar */}
-        <div className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]">
-          {/* Token Info */}
-          {/* <TokenInfo 
+      
+         <RightSidebar 
+        marketContent={<>
+        
+         <TokenInfo 
             token={chartToken} 
             isActive={!!currentToken}
             className="p-4 border-b border-zinc-800" 
-          /> */}
+          />
 
-          {/* Trade Panel */}
-          {/* <TradePanel 
-            token={currentToken} 
-            className="p-4 border-b border-zinc-800" 
-          /> */}
-
-          {/* Bot Positions */}
-        <Predictions 
+       <LiveTrades wsTrades={trades} /> </>}
+        predictionsContent={<>
+        
+         <Predictions 
           token={currentToken}
           botConfig={BOT_CONFIG}
           className=""
-        />
-        </div>
+        /> </>}
+        className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]"
+      />  
       </div>
+     
 
       {/* Status bar */}
       <footer className="h-8 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-600 bg-[#080808] shrink-0">
