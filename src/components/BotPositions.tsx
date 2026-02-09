@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react';
-import { Token, Trade, BotId, BotPortfolio } from '@/types';
+import { Token, Trade, BotId, Position } from '@/types';
 import { Grid2X2, Table2, X, ExternalLink, TrendingUp, TrendingDown, Wallet, BarChart3, Target, Trophy } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
@@ -60,8 +60,10 @@ function TokenImage({
     const fetchImage = async () => {
       try {
         const res = await fetch(`${API_URL}/api/token/${address}`);
+        console.log("res", res);
         if (res.ok) {
           const data = await res.json();
+          console.log("datadddd", data);
           if (data?.token_info?.image_uri) {
             tokenImageCache.set(address, data?.token_info?.image_uri);
             setImageUrl(data?.token_info?.image_uri);
@@ -105,7 +107,7 @@ function TokenImage({
 // ============================================================
 
 export function BotPositions({ trades, token, botConfig, className = '' }: BotPositionsProps) {
-  const [portfolios, setPortfolios] = useState<BotPortfolio[]>([]);
+  const [portfolios, setPortfolios] = useState<Position[]>([]);
   const [botsData, setBotsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBot, setSelectedBot] = useState<BotId | null>(null);
@@ -164,7 +166,7 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
   return (
     <div className={`${className} font-mono text-sm`}>
       {/* Summary Bar */}
-      <div className="grid grid-cols-5 divide-x divide-zinc-800 bg-[#0a0a0a] rounded-lg border border-zinc-800">
+      <div className="grid grid-cols-5 divide-x divide-zinc-800 bg-[#0a0a0a] rounded-lg ">
         <SummaryCell label="COUNCIL VALUE" value={`${formatMON(totalValue)} MON`} />
         <SummaryCell 
           label="TOTAL P&L" 
@@ -181,7 +183,7 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800 bg-[#0a0a0a] rounded-t-lg mt-2">
+      <div className="flex items-center justify-between px-3 py-2 bg-[#0a0a0a] rounded-t-lg mt-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-green-500 text-xs">LIVE</span>
@@ -203,7 +205,7 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
       </div>
 
       {/* Main Content */}
-      <div className="bg-[#0a0a0a] rounded-b-lg border-x border-b border-zinc-800">
+      <div className="bg-[#0a0a0a] rounded-b-lg">
         {view === 'grid' ? (
           <div className="grid grid-cols-5 divide-x divide-zinc-800">
             {allBots.map((botId) => (
@@ -267,7 +269,7 @@ interface BotColumnProps {
   botId: BotId;
   config: { name: string; imgURL: string; color: string };
   data: any;
-  portfolio: BotPortfolio | undefined;
+  portfolio: any | undefined;
   onClick: () => void;
   token: Token | null;
 }
@@ -278,7 +280,7 @@ function BotColumn({ botId, config, data, portfolio, onClick, token }: BotColumn
   const value = data?.totalValue || 0;
   const openPos = data?.openPositions || 0;
   
-  const holdings = portfolio ? aggregatePositions(portfolio.positions.filter(p => p.isOpen)) : [];
+  const holdings = portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [];
 
   return (
     <div 
@@ -370,7 +372,7 @@ interface BotTableProps {
   bots: BotId[];
   botConfig: Record<BotId, { name: string; imgURL: string; color: string }>;
   botsData: any[];
-  portfolios: BotPortfolio[];
+  portfolios: any[];
   token: Token | null;
   onSelectBot: (botId: BotId) => void;
 }
@@ -395,7 +397,7 @@ function BotTable({ bots, botConfig, botsData, portfolios, token, onSelectBot }:
             const config = botConfig[botId];
             const data = botsData.find(b => b.botId === botId);
             const portfolio = portfolios.find(p => p.botId === botId);
-            const holdings = portfolio ? aggregatePositions(portfolio.positions.filter(p => p.isOpen)) : [];
+            const holdings = portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [];
 
             return (
               <tr 
@@ -457,7 +459,7 @@ interface BotDetailDialogProps {
   botId: BotId | null;
   config: { name: string; imgURL: string; color: string } | null;
   data: any;
-  portfolio: BotPortfolio | undefined | null;
+  portfolio: any | undefined | null;
   token: Token | null;
   open: boolean;
   onClose: () => void;
@@ -471,7 +473,7 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
     walletAddress: dataBuffer?.botId === "sensei" ? "0xE4F9910930bE9e9cbe3b635b027197A838899fe4" : dataBuffer?.walletAddress
   }), [dataBuffer]);
 
-  const holdings = useMemo(() => portfolio ? aggregatePositions(portfolio.positions.filter(p => p.isOpen)) : [], [portfolio]);
+  const holdings = useMemo(() => portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [], [portfolio]);
   const pnl = data?.totalPnl || 0;
   const pnlPercent = data?.unrealizedPnlPercent || 0;
   console.log("data =====>", data);

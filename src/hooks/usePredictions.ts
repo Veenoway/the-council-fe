@@ -8,7 +8,7 @@ import { useReadContract, useWriteContract, useAccount, useWaitForTransactionRec
 import { parseEther, formatEther } from 'viem';
 
 const PREDICTIONS_CONTRACT = '0xf6753299c76E910177696196Cd9A5efDDa6c35C0' as const;
-const COUNCIL_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000001' as const; // TODO: Remplacer par vraie adresse
+const COUNCIL_TOKEN_ADDRESS = '0xbD489B45f0f978667fBaf373D2cFA133244F7777' as const; // TODO: Remplacer par vraie adresse
 
 export { COUNCIL_TOKEN_ADDRESS };
 
@@ -153,7 +153,7 @@ export function usePredictions() {
     address: PREDICTIONS_CONTRACT,
     abi: PREDICTIONS_ABI,
     functionName: 'getLatestPredictions',
-    args: [10n],
+    args: [BigInt(10)],
   });
 
   const predictions: PredictionData[] = data?.map((p) => {
@@ -320,12 +320,11 @@ export function useHoldsToken(tokenAddress: string) {
     }
   });
 
-  // Si token address est 0x...0001, on skip le check (everyone can bet)
   if (tokenAddress === '0x0000000000000000000000000000000000000001') {
-    return { holdsToken: true, isLoading: false, balance: 0n };
+    return { holdsToken: true, isLoading: false, balance: BigInt(0) };
   }
 
-  const holdsToken = balance ? balance > 0n : false;
+  const holdsToken = balance ? balance > BigInt(0) : false;
 
-  return { holdsToken, isLoading, balance: balance || 0n };
+  return { holdsToken, isLoading, balance: balance || BigInt(0) };
 }

@@ -39,7 +39,7 @@ interface DisplayTrade {
   side: 'buy' | 'sell';
   amountIn: number;
   amountOut: number;
-  pnl: number;
+  pnl: any;
   pnlPercent: number;
   isOpen: boolean;
   createdAt: string;
@@ -99,7 +99,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
   }, []);
 
   // Transform WebSocket trades to display format
-  const wsDisplayTrades: DisplayTrade[] = wsTrades.map(t => ({
+  const wsDisplayTrades: DisplayTrade[] = wsTrades.map((t: any) => ({
     id: t.id || t.txHash || `ws-${Date.now()}`,
     botId: t.botId,
     botName: BOT_CONFIG[t.botId]?.name || t.botId,
@@ -223,8 +223,8 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
       {/* TX Link */}
       {trade.txHash && (
         <a
-          href={`https://testnet.monadvision.com/tx/${trade.txHash}`}
-          target="_blank"
+          href={`https://monad.socialscan.io/tx/${trade.txHash}`}
+          target="_blank" 
           rel="noopener noreferrer"
           className="p-1"
           onClick={(e) => e.stopPropagation()}

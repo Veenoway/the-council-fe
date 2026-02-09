@@ -103,7 +103,7 @@ export function Predictions({ botConfig, className = '' }: PredictionsProps) {
           <PredictionCard
             key={prediction.id}
             prediction={prediction}
-            isExpanded={selectedPrediction === prediction.id || predictions.length === 1}
+            isExpanded={true}
             onToggle={() => setSelectedPrediction(
               selectedPrediction === prediction.id ? null : prediction.id
             )}
@@ -231,7 +231,7 @@ function PredictionCard({
               <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-[10px] uppercase">
                 {prediction.type.replace('_', ' ')}
               </span>
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-green-500/20 text-green-400">
+              <span className="flex w-fit min-w-[60px] items-center justify-center gap-1 px-1 py-0.5 rounded text-[10px] bg-green-500/20 text-green-400">
                 <Clock className="w-3 h-3" />
                 {timeRemaining}
               </span>
@@ -307,7 +307,7 @@ function PredictionCard({
              
             </div>
             <div className="flex gap-2"> <h3 className="text-white font-medium mb-2">{prediction.question}</h3>
-                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded h-fit text-[10px] ${
+                  <span className={`flex w-fit min-w-[70px] h-fit items-center justify-center gap-1 px-1 py-0.5 rounded text-[10px] ${
                 isEnded 
                   ? 'bg-zinc-700 text-zinc-400' 
                   : 'bg-green-500/20 text-green-400'
@@ -427,9 +427,8 @@ function PredictionCard({
           {selectedOption && !isEnded && !userBet && (
             <div className="p-4 border-t border-zinc-800">
               {!isConnected ? (
-                <div className="text-center py-4">
+                <div className="text-center py-4 flex flex-col items-center justify-center">
                   <p className="text-zinc-500 mb-3">Connect wallet to place bet</p>
-                  <ConnectWalletButton />
                 </div>
               ) : (
                 <>
@@ -590,7 +589,6 @@ function PredictionCard({
                       </>
                     ) : (
                       <>
-                        <Zap className="w-4 h-4" />
                         Place Bet
                       </>
                     )}

@@ -125,6 +125,7 @@ export function Chart({ token, className = '' }: ChartProps) {
           'mainSeriesProperties.candleStyle.borderUpColor': '#22c55e',
           'mainSeriesProperties.candleStyle.borderDownColor': '#ef4444',
           'volumePaneSize': 'medium',
+          'toolbar_bg': '#0a0a0a',
         },
         studies_overrides: {
           'volume.volume.color.0': '#ef4444',
@@ -151,6 +152,7 @@ export function Chart({ token, className = '' }: ChartProps) {
           'symbol_search_hot_key',
           'study_dialog_search_control',
           'display_market_status',
+           'header_widget',  
         ],
         enabled_features: [
           'hide_left_toolbar_by_default',
@@ -224,19 +226,12 @@ export function Chart({ token, className = '' }: ChartProps) {
         </div>
       )}
 
-      {/* Token indicator overlay */}
-      {isChartReady && token && (
-        <div className="absolute top-2 left-2 z-20 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs">
-          <span className="text-green-400 font-bold">${token.symbol}</span>
-          <span className="text-zinc-500 ml-2">{token.name}</span>
-        </div>
-      )}
+    
 
       {/* Waiting overlay when no token */}
       {isChartReady && !token && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
           <div className="text-center">
-            <div className="text-4xl mb-2">🔍</div>
             <div className="text-zinc-400">Waiting for next token...</div>
           </div>
         </div>
