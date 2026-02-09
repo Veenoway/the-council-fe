@@ -91,16 +91,15 @@ export function Predictions({ botConfig, className = '' }: PredictionsProps) {
   }
 
   return (
-    <div className={`${className} font-mono text-sm`}>
+    <div className={`${className} font-poppins text-sm`}>
       {/* Header with Connect Wallet */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-white">Predictions</h2>
-        <ConnectWalletButton />
+      <div className="flex items-center justify-between">
+    
       </div>
 
       {/* Predictions List */}
-      <div className="space-y-3">
-        {predictions.map((prediction) => (
+      <div className="space-y-3 -mt-1">
+        {predictions?.filter(prediction => prediction.endTime > new Date()).map((prediction) => (
           <PredictionCard
             key={prediction.id}
             prediction={prediction}
@@ -224,7 +223,7 @@ function PredictionCard({
   // ============================================================
   if (needsToken) {
     return (
-      <div className="overflow-hidden border border-zinc-800 rounded-lg bg-zinc-950">
+      <div className="overflow-hidden font-poppins ">
         {/* Blurred Preview Header */}
         <div className="p-4 relative">
           <div className="blur-sm pointer-events-none select-none">
@@ -256,12 +255,10 @@ function PredictionCard({
           {/* Show MiniSwap directly */}
           <div className="max-w-sm mx-auto">
             <div className="text-center mb-6">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-purple-400" />
-              </div>
+              
               <h3 className="text-lg font-bold text-white mb-1">Token-Gated</h3>
               <p className="text-xs text-zinc-500">
-                Buy the required token to participate
+                Buy the $COUNCIL token to participate in this prediction
               </p>
             </div>
             
@@ -282,7 +279,7 @@ function PredictionCard({
   // ============================================================
   if (isConnected && isCheckingToken) {
     return (
-      <div className="overflow-hidden border border-zinc-800 rounded-lg bg-zinc-950">
+      <div className="overflow-hidden">
         <div className="p-8 flex flex-col items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-purple-400 mb-3" />
           <p className="text-sm text-zinc-500">Checking token balance...</p>
@@ -295,19 +292,22 @@ function PredictionCard({
   // RENDER: Normal Prediction Card (user holds token or not connected)
   // ============================================================
   return (
-    <div className="overflow-hidden border border-zinc-800 rounded-lg">
+    <div className="overflow-hidden">
       {/* Header */}
       <div 
-        className="p-4 cursor-pointer hover:bg-zinc-900/50 transition-all"
+        className="p-4 cursor-pointer"
         onClick={onToggle}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-[10px] uppercase">
-                {prediction.type.replace('_', ' ')}
-              </span>
-              <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${
+             
+            
+             
+             
+            </div>
+            <div className="flex gap-2"> <h3 className="text-white font-medium mb-2">{prediction.question}</h3>
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded h-fit text-[10px] ${
                 isEnded 
                   ? 'bg-zinc-700 text-zinc-400' 
                   : 'bg-green-500/20 text-green-400'
@@ -315,18 +315,8 @@ function PredictionCard({
                 <Clock className="w-3 h-3" />
                 {prediction.resolved ? 'Resolved' : timeRemaining}
               </span>
-              {userBet && (
-                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-[10px]">
-                  You're in!
-                </span>
-              )}
-              {holdsToken && (
-                <span className="px-2 py-0.5 bg-green-500/10 text-green-500 rounded text-[10px] flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Holder
-                </span>
-              )}
             </div>
-            <h3 className="text-white font-medium mb-2">{prediction.question}</h3>
+           
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1">
                 <Coins className="w-3 h-3" />
@@ -338,9 +328,7 @@ function PredictionCard({
               </span>
             </div>
           </div>
-          <button className="text-zinc-500 hover:text-white p-1">
-            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-          </button>
+          
         </div>
       </div>
 
@@ -395,12 +383,28 @@ function PredictionCard({
                       <span className="text-[10px] text-zinc-600">
                         {option.totalStaked.toFixed(2)} MON
                       </span>
-                      <span 
-                        className="text-xs font-medium min-w-[40px] text-right"
-                        style={{ color: option.color }}
-                      >
-                        {option.odds.toFixed(2)}x
-                      </span>
+                      <div className="text-right">
+                        <span 
+                          className="text-xs font-medium min-w-[40px] block"
+                          style={{ color: option.color }}
+                        >
+                          {option.odds.toFixed(2)}x
+                        </span>
+                        {isSelected && parseFloat(betAmount) > 0 && parseFloat(betAmount) !== 1 && (
+                          <span className="text-[9px] text-zinc-500">
+                            {(() => {
+                              const bet = parseFloat(betAmount);
+                              const newOptionTotal = option.totalStaked + bet;
+                              const newPoolTotal = totalStaked + bet;
+                              const poolAfterFee = newPoolTotal * 0.975;
+                              const payout = (bet / newOptionTotal) * poolAfterFee;
+                              const profit = payout - bet;
+                              const profitMultiplier = profit / bet;
+                              return `→ ${profitMultiplier.toFixed(2)}x`;
+                            })()}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -488,15 +492,56 @@ function PredictionCard({
                     </div>
                   </div>
 
-                  {/* Potential Win */}
-                  <div className="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-zinc-500">Potential Win</span>
-                      <span className="text-base font-bold text-white">
-                        {(parseFloat(betAmount || '0') * (prediction.options.find(o => o.id === selectedOption)?.odds || 0)).toFixed(2)} MON
-                      </span>
-                    </div>
-                  </div>
+                  {/* Potential Win - Calcul réaliste */}
+                  {(() => {
+                    const selectedOpt = prediction.options.find(o => o.id === selectedOption);
+                    const betAmt = parseFloat(betAmount || '0');
+                    
+                    if (!selectedOpt || betAmt <= 0) {
+                      return (
+                        <div className="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-zinc-500">Potential Win</span>
+                            <span className="text-base font-bold text-white">0.00 MON</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Calcul réaliste : après ton bet, les odds changent
+                    const newOptionTotal = selectedOpt.totalStaked + betAmt;
+                    const newPoolTotal = totalStaked + betAmt;
+                    const poolAfterFee = newPoolTotal * 0.975; // 2.5% fee
+                    
+                    // Ta part = (ton bet / nouveau total option) * pool après fee
+                    const yourPayout = (betAmt / newOptionTotal) * poolAfterFee;
+                    const profit = yourPayout - betAmt;
+                    const profitMultiplier = profit / betAmt;
+                    
+                    return (
+                      <div className="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-zinc-500">If you win</span>
+                          <span className="text-base font-bold text-green-400">
+                            +{profit.toFixed(2)} MON
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-zinc-600">
+                          <span>You get back</span>
+                          <span>{yourPayout.toFixed(2)} MON (your {betAmt} + {profit.toFixed(2)} profit)</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-zinc-600">
+                          <span>Profit multiplier</span>
+                          <span>{profitMultiplier.toFixed(2)}x your bet</span>
+                        </div>
+                        {profitMultiplier < 1 && (
+                          <p className="text-[10px] text-yellow-500 mt-1">
+                            ⚠️ Low return. Pool needs more bets on other options.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Success Message */}
                   {showSuccess && hash && (
@@ -560,37 +605,152 @@ function PredictionCard({
           )}
 
           {/* User Bet Display */}
-          {userBet && !selectedOption && (
+          {userBet && (
             <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900/50">
-              <div className="flex items-center justify-between">
+              {/* Current Bet Info */}
+              <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-xs text-zinc-500">Your bet</p>
-                  <p className="text-sm text-white">
-                    {userBet.amount.toFixed(2)} MON on {prediction.options[userBet.optionId - 1]?.label}
+                  <p className="text-xs text-zinc-500">Your bet on {prediction.options[userBet.optionId - 1]?.label}</p>
+                  <p className="text-lg font-bold text-white">
+                    {userBet.amount.toFixed(2)} MON
                   </p>
                 </div>
-                {prediction.resolved && isWinner && !userBet.claimed && (
-                  <button
-                    onClick={handleClaim}
-                    disabled={isClaiming}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50"
-                  >
-                    {isClaiming ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      'Claim Winnings'
-                    )}
-                  </button>
-                )}
-                {prediction.resolved && !isWinner && (
-                  <span className="text-sm text-red-400">Lost</span>
-                )}
-                {prediction.resolved && userBet.claimed && (
-                  <span className="text-sm text-green-400 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Claimed
-                  </span>
-                )}
+                <div className="text-right">
+                  <p className="text-xs text-zinc-500">Potential win</p>
+                  {(() => {
+                    const userOption = prediction.options[userBet.optionId - 1];
+                    if (!userOption || userOption.totalStaked === 0) return <p className="text-lg font-bold text-green-400">-</p>;
+                    
+                    const poolAfterFee = totalStaked * 0.975;
+                    const yourPayout = (userBet.amount / userOption.totalStaked) * poolAfterFee;
+                    const profit = yourPayout - userBet.amount;
+                    const profitMultiplier = profit / userBet.amount;
+                    
+                    return (
+                      <>
+                        <p className="text-lg font-bold text-green-400">+{profit.toFixed(2)} MON</p>
+                        <p className="text-[10px] text-zinc-500">{profitMultiplier.toFixed(2)}x profit</p>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
+
+              {/* Resolved States */}
+              {prediction.resolved && isWinner && !userBet.claimed && (
+                <button
+                  onClick={handleClaim}
+                  disabled={isClaiming}
+                  className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50"
+                >
+                  {isClaiming ? (
+                    <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  ) : (
+                    'Claim Winnings'
+                  )}
+                </button>
+              )}
+              {prediction.resolved && !isWinner && (
+                <div className="text-center py-2 text-red-400 text-sm">Lost</div>
+              )}
+              {prediction.resolved && userBet.claimed && (
+                <div className="text-center py-2 text-green-400 text-sm flex items-center justify-center gap-1">
+                  <CheckCircle className="w-4 h-4" /> Claimed
+                </div>
+              )}
+
+              {/* Add More Bet Section (if not resolved/ended) */}
+              {!prediction.resolved && !isEnded && (
+                <div className="mt-3 pt-3 border-t border-zinc-800">
+                  <p className="text-xs text-zinc-500 mb-2">Add to your bet</p>
+                  <div className="flex gap-2">
+                    <div className="flex-1 relative">
+                      <input
+                        type="number"
+                        value={betAmount}
+                        onChange={(e) => onBetAmountChange(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-zinc-600"
+                        placeholder="0.00"
+                        min="0.1"
+                        step="0.1"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">
+                        MON
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        // Set the selected option to user's existing bet option
+                        const optionId = prediction.options[userBet.optionId - 1]?.id;
+                        if (optionId) {
+                          onSelectOption(optionId);
+                          // Trigger bet
+                          placeBet(prediction.onchainId, userBet.optionId, betAmount);
+                        }
+                      }}
+                      disabled={isPending || isConfirming || !betAmount || parseFloat(betAmount) < 0.1}
+                      className={`
+                        px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2
+                        ${isPending || isConfirming || !betAmount || parseFloat(betAmount) < 0.1
+                          ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                          : 'bg-purple-500 hover:bg-purple-600 text-white'
+                        }
+                      `}
+                    >
+                      {isPending || isConfirming ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          Add
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Quick add buttons */}
+                  <div className="flex gap-1.5 mt-2">
+                    {[1, 5, 10].map((amount) => (
+                      <button
+                        key={amount}
+                        onClick={() => onBetAmountChange(amount.toString())}
+                        className={`
+                          flex-1 py-1.5 rounded text-xs font-medium transition-all
+                          ${betAmount === amount.toString()
+                            ? 'bg-zinc-700 text-white'
+                            : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
+                          }
+                        `}
+                      >
+                        +{amount}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Preview new potential win */}
+                  {parseFloat(betAmount) > 0 && (
+                    <div className="mt-2 p-2 bg-zinc-800/50 rounded text-[10px] text-zinc-400">
+                      {(() => {
+                        const userOption = prediction.options[userBet.optionId - 1];
+                        const addAmount = parseFloat(betAmount);
+                        const newBetTotal = userBet.amount + addAmount;
+                        const newOptionTotal = userOption.totalStaked + addAmount;
+                        const newPoolTotal = totalStaked + addAmount;
+                        const poolAfterFee = newPoolTotal * 0.975;
+                        const newPayout = (newBetTotal / newOptionTotal) * poolAfterFee;
+                        const newProfit = newPayout - newBetTotal;
+                        const profitMultiplier = newProfit / newBetTotal;
+                        
+                        return (
+                          <span>
+                            After adding: <span className="text-green-400">+{newProfit.toFixed(2)} MON</span> profit ({profitMultiplier.toFixed(2)}x)
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

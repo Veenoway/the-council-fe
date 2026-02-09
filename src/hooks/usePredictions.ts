@@ -7,8 +7,8 @@
 import { useReadContract, useWriteContract, useAccount, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 
-const PREDICTIONS_CONTRACT = '0xc7e00b15aFa5e8E6966Be09FD464ea0Fed959d71' as const;
-const COUNCIL_TOKEN_ADDRESS = '0xbD489B45f0f978667fBaf373D2cFA133244F7777' as const; // TODO: Remplacer par vraie adresse
+const PREDICTIONS_CONTRACT = '0xf6753299c76E910177696196Cd9A5efDDa6c35C0' as const;
+const COUNCIL_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000001' as const; // TODO: Remplacer par vraie adresse
 
 export { COUNCIL_TOKEN_ADDRESS };
 
@@ -174,14 +174,24 @@ export function usePredictions() {
       isTie: p.isTie,
       options: p.options.map((o, i) => {
         const staked = Number(formatEther(o.totalStaked));
-        const odds = totalStaked > 0 && staked > 0 ? totalStaked / staked : p.options.length;
+        
+        // Calcul des odds réalistes pour un bet de 1 MON
+        // odds = profit / mise (pas payout / mise)
+        const standardBet = 1;
+        const newOptionTotal = staked + standardBet;
+        const newPoolTotal = totalStaked + standardBet;
+        const poolAfterFee = newPoolTotal * 0.975; // 2.5% fee
+        const payout = (standardBet / newOptionTotal) * poolAfterFee;
+        const profit = payout - standardBet;
+        const profitMultiplier = staked > 0 ? profit / standardBet : (p.options.length - 1) * 0.975;
+        
         return {
           id: BOT_IDS[i] || `option_${i + 1}`,
           label: o.label,
           totalStaked: staked,
           bettors: Number(o.numBettors),
           color: BOT_COLORS[BOT_IDS[i]] || '#888',
-          odds: Math.round(odds * 100) / 100,
+          odds: Math.round(profitMultiplier * 100) / 100,
         };
       })
     };

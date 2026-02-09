@@ -34,10 +34,10 @@ export function ConnectWalletButton() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg px-3 py-2 transition-all"
+          className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-900 rounded-lg px-3 py-2 transition-all"
         >
           <div className="w-2 h-2 bg-green-500 rounded-full" />
-          <span className="text-sm text-white font-mono">
+          <span className="text-xs text-white font-mono">
             {formatAddress(address)}
           </span>
           {balance && (
@@ -116,7 +116,7 @@ export function ConnectWalletButton() {
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isPending}
-        className="flex items-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-lg px-4 py-2 font-medium transition-all disabled:opacity-50"
+        className="flex items-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-lg text-xs px-4 py-2 font-medium transition-all disabled:opacity-50"
       >
         {isPending ? (
           <>

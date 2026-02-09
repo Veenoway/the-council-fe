@@ -4,8 +4,9 @@
 // CHAT PANEL — Displays bot conversation
 // ============================================================
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Message, BotId } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ChatPanelProps {
   messages: Message[];
@@ -16,12 +17,15 @@ interface ChatPanelProps {
 export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollRef.current && messages.length > 0) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
-  }, [messages]);
+  }, [messages.length]);
 
   const formatTime = (date: Date | string) => {
     const d = new Date(date);
@@ -29,77 +33,121 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
   };
 
   const getBotInfo = (botId: string) => {
+    if (botId === 'system') {
+      return { name: 'System', imgURL: '/bots/system.png', color: '#888' };
+    }
     if (botId.startsWith('human_')) {
-      return { name: `Anon`, imgURL: '/bots/anon.jpg', color: '#666' };
+      return { name: 'Anon', imgURL: '/bots/anon.jpg', color: '#666' };
     }
     return botConfig[botId as BotId] || { name: botId, imgURL: '/bots/anon.jpg', color: '#666' };
   };
 
+  console.log('ChatPanel render, messages:', messages.length); // Debug log
+
   return (
-    <div className={`bg-[#0a0a0a] rounded-lg flex flex-col ${className}`}>
+    <div className={`bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full ${className}`}>
       {/* Header */}
-      <div className="px-4 py-2 border-b border-zinc-800 flex items-center justify-between shrink-0">
-        <h3 className="font-semibold text-sm">💬 Council Chat</h3>
-        <span className="text-xs text-zinc-500">{messages.length} messages</span>
+      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">💬</span>
+          <h3 className="font-semibold">Council Chat</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs text-zinc-500">{messages.length} messages</span>
+        </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 ? (
-          <div className="text-center text-zinc-500 py-8">
-            Waiting for discussion...
+          <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+            <p>Waiting for discussion...</p>
+            <p className="text-xs text-zinc-600 mt-1 text-center">Bots will start chatting when a new token appears</p>
           </div>
         ) : (
-          messages.map((msg) => {
-            const bot = getBotInfo(msg.botId);
-            const isTransaction = msg.content.includes('tx:') || msg.content.includes('0x');
-           
-            
-            return (
-              <div key={msg.id} className="flex gap-2 group">
-                {/* Avatar */}
-                <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                  style={{ backgroundColor: `${bot.color}20` }}
+          <AnimatePresence mode="popLayout">
+            {messages.map((msg) => {
+              const bot = getBotInfo(msg.botId);
+              const isSystem = msg.botId === 'system' || msg.messageType === 'system';
+              const isVerdict = msg.messageType === 'verdict';
+              
+              return (
+                <motion.div 
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex gap-2 group ${isSystem ? 'justify-center' : ''}`}
                 >
-                  <img src={bot.imgURL} alt={bot.name} className="w-8 h-8 rounded-full" />
-                </div>
+                  {isSystem ? (
+                    <div className={`
+                      px-3 py-1.5 rounded-full text-xs
+                      ${isVerdict 
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+                        : 'bg-zinc-800 text-zinc-400'
+                      }
+                    `}>
+                      {msg.content}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Avatar */}
+                      <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
+                        style={{ backgroundColor: `${bot.color}20`, border: `2px solid ${bot.color}40` }}
+                      >
+                        <img 
+                          src={bot.imgURL} 
+                          alt={bot.name} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span 
-                      className="font-medium text-sm"
-                      style={{ color: bot.color }}
-                    >
-                      {bot.name}
-                    </span>
-                    <span className="text-xs text-zinc-600">
-                      {formatTime(msg.createdAt)}
-                    </span>
-                  </div>
-                  
-                  <p className={`text-sm mt-0.5 break-words ${
-                    isTransaction ? 'text-green-400 font-mono text-xs' : 'text-zinc-300'
-                  }`}>
-                    {msg.content}
-                  </p>
-                </div>
-              </div>
-            );
-          })
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span 
+                            className="font-medium text-sm"
+                            style={{ color: bot.color }}
+                          >
+                            {bot.name}
+                          </span>
+                          <span className="text-xs text-zinc-600">
+                            {formatTime(msg.createdAt)}
+                          </span>
+                        </div>
+                        
+                        <p className="text-sm mt-0.5 break-words text-zinc-300 leading-relaxed">
+                          {msg.content}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
       </div>
 
-      {/* Input (optional - for human messages) */}
-      <div className="p-2 border-t border-zinc-800 shrink-0">
-        <input
-          type="text"
-          placeholder="Type a message... (coming soon)"
-          disabled
-          className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-zinc-400 placeholder-zinc-600 cursor-not-allowed"
-        />
-      </div>
+      {/* Typing indicator */}
+      {messages.length > 0 && (
+        <div className="px-4 py-2 border-t border-zinc-800 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span>Council is deliberating...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

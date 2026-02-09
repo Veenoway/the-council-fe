@@ -64,14 +64,7 @@ export function TokenInfo({ token, isActive = true, className = '' }: TokenInfoP
 
   return (
     <div className={className}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-sm"> Token Info</h3>
-        {!isActive && (
-          <span className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500">
-            Previous
-          </span>
-        )}
-      </div>
+    
 
 
       {/* Main stats */}
@@ -85,10 +78,9 @@ export function TokenInfo({ token, isActive = true, className = '' }: TokenInfoP
       </div>
 
       {/* Divider */}
-      <div className="border-t border-zinc-800 my-3" />
 
       {/* Health indicators */}
-      <div className="space-y-2">
+      <div className="space-y-2 mt-2">
         <div className="flex justify-between text-sm">
           <span className="text-zinc-500">Liq/MCap Ratio</span>
           <span className={isHealthyLiq ? 'text-green-400' : 'text-yellow-400'}>
