@@ -76,63 +76,25 @@ export const createNadFunDatafeed = (token: Token) => {
         
         // Calculate pricescale for very small memecoin prices
         // We need enough precision to show price movements
-        let pricescale = 100;
-        
-        if (price < 0.000000000001) {
-          pricescale = 100000000000000000; // 10^17
-        } else if (price < 0.00000000001) {
-          pricescale = 10000000000000000; // 10^16
-        } else if (price < 0.0000000001) {
-          pricescale = 1000000000000000; // 10^15
-        } else if (price < 0.000000001) {
-          pricescale = 100000000000000; // 10^14
-        } else if (price < 0.00000001) {
-          pricescale = 10000000000000; // 10^13
-        } else if (price < 0.0000001) {
-          pricescale = 1000000000000; // 10^12
-        } else if (price < 0.000001) {
-          pricescale = 100000000000; // 10^11
-        } else if (price < 0.00001) {
-          pricescale = 10000000000; // 10^10
-        } else if (price < 0.0001) {
-          pricescale = 1000000000; // 10^9
-        } else if (price < 0.001) {
-          pricescale = 100000000; // 10^8
-        } else if (price < 0.01) {
-          pricescale = 10000000; // 10^7
-        } else if (price < 0.1) {
-          pricescale = 1000000; // 10^6
-        } else if (price < 1) {
-          pricescale = 100000; // 10^5
-        } else if (price < 10) {
-          pricescale = 10000;
-        } else if (price < 100) {
-          pricescale = 1000;
-        } else {
-          pricescale = 100;
-        }
-
+      
         const symbolInfo = {
-          name: token.symbol,
-          description: token.name,
-          type: 'crypto',
-          session: '24x7',
-          timezone: 'Etc/UTC',
-          ticker: token.address,
-          minmov: 1,
-          pricescale,
-          has_intraday: true,
-          has_daily: true,
-          has_weekly_and_monthly: true,
-          supported_resolutions: supportedResolutions,
-          volume_precision: 2,
-          data_status: 'streaming',
-          exchange: 'nad.fun',
-          listed_exchange: 'nad.fun',
-          format: 'price', // Use price format, not volume
+         name: (token?.symbol),
+        description: "",
+        type: "crypto",
+        session: "24x7",
+        ticker: token?.symbol,
+        minmov: 1,
+        pricescale: Math.min(
+          10 ** String(Math.round(10000 / price)).length,
+          10000000000000000
+        ),
+        has_intraday: true,
+        intraday_multipliers: ["1", "5", "15", "30", "60"],
+        supported_resolution: supportedResolutions,
+        volume_precision: 2,
+        data_status: "streaming",
         };
 
-        console.log(`📊 Symbol resolved: ${token.symbol}, price: ${price}, pricescale: ${pricescale}`);
         onResolve(symbolInfo);
       }, 0);
     },

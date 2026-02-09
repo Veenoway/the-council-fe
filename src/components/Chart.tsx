@@ -95,6 +95,24 @@ export function Chart({ token, className = '' }: ChartProps) {
 
       const datafeed = createNadFunDatafeed(tokenToShow);
 
+       const ENABLED_FEATURES = ["show_spread_operators", "header_resolutions"];
+
+ const DISABLED_FEATURES = [
+  "header_compare",
+  "header_symbol_search",
+  "symbol_info",
+  "volume_force_overlay",
+  "symbol_search_hot_key",
+  "display_market_status",
+  "compare_symbol",
+  "show_interval_dialog_on_key_press",
+  "header_widget",
+  "header_settings",
+  "header_undo_redo",
+  "header_screenshot",
+  "header_saveload",
+];
+
       widgetRef.current = new window.TradingView.widget({
         symbol: tokenToShow.symbol,
         datafeed,
@@ -104,6 +122,8 @@ export function Chart({ token, className = '' }: ChartProps) {
         fullscreen: false,
         autosize: true,
         theme: 'Dark',
+        volume_precision: 2,
+        api_version: '2',
         
         // Styling
         custom_css_url: '/static/chart.css',
@@ -126,6 +146,8 @@ export function Chart({ token, className = '' }: ChartProps) {
           'mainSeriesProperties.candleStyle.borderDownColor': '#ef4444',
           'volumePaneSize': 'medium',
           'toolbar_bg': '#0a0a0a',
+          "paneProperties.legendProperties.showText": false,
+          
         },
         studies_overrides: {
           'volume.volume.color.0': '#ef4444',
@@ -142,7 +164,6 @@ export function Chart({ token, className = '' }: ChartProps) {
           'header_saveload',
           'use_localstorage_for_settings',
           'volume_force_overlay',
-          'left_toolbar',
           'control_bar',
           'timeframes_toolbar',
           'edit_buttons_in_legend',
@@ -153,11 +174,9 @@ export function Chart({ token, className = '' }: ChartProps) {
           'study_dialog_search_control',
           'display_market_status',
            'header_widget',  
+           'create_volume_indicator_by_default',
         ],
-        enabled_features: [
-          'hide_left_toolbar_by_default',
-          'move_logo_to_main_pane',
-        ],
+        enabled_features: ENABLED_FEATURES,
 
         // Time
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -208,6 +227,7 @@ export function Chart({ token, className = '' }: ChartProps) {
     console.log(`📈 Switching chart to ${token.symbol}`);
     
     // Reinitialize with new token (TradingView doesn't support dynamic datafeed swap easily)
+     setIsChartReady(false);
     initChart(token);
     
   }, [token?.address, isChartReady, currentSymbol, initChart]);
@@ -216,19 +236,16 @@ export function Chart({ token, className = '' }: ChartProps) {
     <div className={`relative bg-[#0a0a0a] rounded-lg overflow-hidden ${className}`}>
       {/* Loading overlay - only show before first chart */}
       {!isChartReady && (
-        <div className="absolute inset-0 bg-[#0a0a0a] flex items-center justify-center z-10">
-          <div className="text-center">
+        <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center z-10 w-full h-full">
             <div className="animate-spin w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full mx-auto mb-2" />
             <div className="text-zinc-500 text-sm">
-              {isLibraryLoaded ? 'Initializing chart...' : 'Loading TradingView...'}
+                Initializing chart...
             </div>
-          </div>
         </div>
       )}
 
     
 
-      {/* Waiting overlay when no token */}
       {isChartReady && !token && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
           <div className="text-center">

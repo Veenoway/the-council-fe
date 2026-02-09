@@ -144,15 +144,31 @@ export function TradingTerminal({
       case 'new_token':
         if (currentToken) {
           setPreviousToken(currentToken);
+          setMessages(prev => {
+            const separatorId = `separator-${data.address}`;
+            if (prev.some(m => m.id === separatorId)) {
+              return prev; // Skip duplicate separator
+            }
+            return [...prev, {
+              id: separatorId,
+              botId: 'system',
+              content: `── New token: $${data.symbol} ──`,
+              messageType: 'system',
+              createdAt: new Date(),
+            }];
+          });
         }
         setCurrentToken(data);
-        setMessages([]);
-        setTrades([]);
         setVerdict(null);
         break;
 
       case 'message':
-        setMessages(prev => [...prev, data]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.id)) {
+            return prev; 
+          }
+          return [...prev, data];
+        });
         break;
 
       case 'trade':
