@@ -108,7 +108,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
     tokenAddress: t.tokenAddress,
     tokenSymbol: t.tokenSymbol,
     side: t.side || 'buy',
-    amountIn: Number(t.amountIn || 0),
+    amountIn: Number(t.amountIn || t.valueMon || 0),
     amountOut: Number(t.amountOut || 0),
     pnl: Number(t.pnl || 0),
     pnlPercent: 0,
@@ -204,7 +204,7 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
         
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-xs text-zinc-400">
-            {trade.amountIn.toFixed(2)} MON
+            {trade.amountIn.toFixed(2) } MON
           </span>
           <span className="text-xs text-zinc-600">•</span>
           <span className="text-xs text-zinc-500">
