@@ -46,17 +46,7 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
 
   return (
     <div className={`bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full ${className}`}>
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">💬</span>
-          <h3 className="font-semibold">Council Chat</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs text-zinc-500">{messages.length} messages</span>
-        </div>
-      </div>
+     
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -70,7 +60,6 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
             {messages.map((msg) => {
               const bot = getBotInfo(msg.botId);
               const isSystem = msg.botId === 'system' || msg.messageType === 'system';
-              const isVerdict = msg.messageType === 'verdict';
               
               return (
                 <motion.div 
@@ -82,15 +71,38 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                   className={`flex gap-2 group ${isSystem ? 'justify-center' : ''}`}
                 >
                   {isSystem ? (
-                    <div className={`
-                      px-3 py-1.5 rounded-full text-xs
-                      ${isVerdict 
-                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-                        : 'bg-zinc-800 text-zinc-400'
-                      }
-                    `}>
-                      {msg.content}
-                    </div>
+                    <>
+                   
+                       <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
+                        style={{ backgroundColor: `red`, border: `2px solid red` }}
+                      >
+                        <img 
+                          src="/novee.jpg" 
+                          alt="Novee System" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span 
+                            className="font-medium text-sm text-red-500"
+                          >
+                            Novee System
+                          </span>
+                          <span className="text-xs text-zinc-600">
+                            {formatTime(msg.createdAt)}
+                          </span>
+                        </div>
+                        
+                        <p className="text-sm mt-0.5 break-words text-zinc-300 leading-relaxed">
+                          {msg.content}
+                        </p>
+                      </div> </>
                   ) : (
                     <>
                       {/* Avatar */}

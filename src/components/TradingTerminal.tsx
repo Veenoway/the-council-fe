@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useEffect, useState, useCallback } from 'react';
-import { Token, Message, Trade, BotId } from '@/types';
+import { Token, Message, Trade, BotId, Verdict } from '@/types';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import Chart from './Chart';
 import ChatPanel from './ChatPanel';
@@ -18,6 +18,10 @@ import { useAccount } from 'wagmi';
 import { TokenHistory } from './TokenHistory';
 import { LiveTrades } from './LiveTrades';
 import RightSidebar from './RightBar';
+import { TokenSearchModal } from './TokenSearchModal';
+import { BuyCouncilModal } from './BuyCouncilModal';
+import { Search, Crown } from 'lucide-react';
+import TradeSidebar from './TradeSidebar';
 
 // ============================================================
 // BOT CONFIG
@@ -30,6 +34,8 @@ const BOT_CONFIG: Record<BotId, { name: string; imgURL: string; color: string }>
   sterling: { name: 'Harpaljadeja', imgURL: '/bots/harpal.jpg', color: '#8b5cf6' },
   oracle: { name: 'Mikeweb', imgURL: '/bots/mike.jpg', color: '#ec4899' },
 };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 
 // ============================================================
 // PROPS
@@ -56,10 +62,68 @@ export function TradingTerminal({
   const [verdict, setVerdict] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const { address } = useAccount();
+
+  // Modal states
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [buyCouncilOpen, setBuyCouncilOpen] = useState(false);
+  const [isHolder, setIsHolder] = useState(false);
+
   // WebSocket connection
   const { isConnected, lastMessage } = useWebSocket(
     process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'
   );
+
+  // --------------------------------------------------------
+  // CHECK HOLDER STATUS
+  // --------------------------------------------------------
+  useEffect(() => {
+    if (address) {
+      checkHolderStatus(address);
+    } else {
+      setIsHolder(false);
+    }
+  }, [address]);
+
+  const checkHolderStatus = async (walletAddress: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/holder/check/${walletAddress}`);
+      if (res.ok) {
+        const data = await res.json();
+        setIsHolder(data.isHolder);
+      }
+    } catch (e) {
+      console.error('Failed to check holder status:', e);
+    }
+  };
+
+  // Handle Search button click - different behavior based on holder status
+  const handleSearchClick = () => {
+    if (!address) {
+      return;
+    }
+    
+    if (isHolder) {
+      setSearchOpen(true);
+    } else {
+      setBuyCouncilOpen(true);
+    }
+  };
+
+  // Handle token selection from search modal
+  const handleTokenSelect = (token: any) => {
+    console.log('🎯 Token selected for analysis:', token.symbol);
+  };
+
+  // Handle successful COUNCIL purchase
+  const handleCouncilPurchaseSuccess = () => {
+    if (address) {
+      checkHolderStatus(address);
+    }
+    setBuyCouncilOpen(false);
+    setTimeout(() => {
+      setSearchOpen(true);
+    }, 500);
+  };
   
   // --------------------------------------------------------
   // HANDLE WEBSOCKET MESSAGES
@@ -75,7 +139,6 @@ export function TradingTerminal({
         break;
 
       case 'new_token':
-        // Save current as previous before switching
         if (currentToken) {
           setPreviousToken(currentToken);
         }
@@ -102,12 +165,10 @@ export function TradingTerminal({
     }
   }, [lastMessage, currentToken]);
 
-  // Update connected state
   useEffect(() => {
     setConnected(isConnected);
   }, [isConnected]);
 
-  // Token to display on chart - current, or previous if none
   const chartToken = currentToken || previousToken;
 
   return (
@@ -145,52 +206,58 @@ export function TradingTerminal({
                 {chartToken.priceChange24h >= 0 ? '+' : ''}{chartToken.priceChange24h?.toFixed(2)}%
               </span>
             )}
-            {verdict && currentToken && (
-              <span className={`px-3 py-1 rounded text-sm font-bold uppercase ${
-                verdict === 'buy' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                verdict === 'pass' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              }`}>
-                {verdict}
-              </span>
-            )}
+           
           </div>
         )}
 
-        {/* Links */}
+        {/* Search Token Button / Connect Wallet */}
         <div className="flex items-center gap-3">
-          {chartToken && address ?  (
-            <a
-              href={`https://nad.fun/token/${chartToken.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-500 hover:text-green-400 transition-colors text-sm flex items-center gap-1"
+          {address ? (
+            <button
+              onClick={handleSearchClick}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
+                ${isHolder 
+                  ? 'bg-white hover:bg-zinc-100 text-black' 
+                  : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black'
+                }
+              `}
             >
-              nad.fun <span className="text-xs">↗</span>
-            </a>
+              {isHolder ? (
+                <>
+                  <Crown size={14} className="text-yellow-600" />
+                  <Search size={14} />
+                  <span>Search Token</span>
+                </>
+              ) : (
+                <>
+                  <Crown size={14} />
+                  <span>Get $COUNCIL</span>
+                </>
+              )}
+            </button>
           ) : (
-                  <ConnectWalletButton />
+            <ConnectWalletButton />
           )}
         </div>
       </header>
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left side - Chart + Chat */} 
+        {/* Left side - Chat */} 
         <ChatPanel 
-            messages={messages} 
-            botConfig={BOT_CONFIG}
-            className="w-80 shrink-0"
-          />
+          messages={messages} 
+          botConfig={BOT_CONFIG}
+          className="w-80 shrink-0"
+        />
+        
+        {/* Center - Chart + Positions */}
         <div className="flex-1 flex flex-col p-2 gap-2 min-w-0">
-          {/* Chart - shows immediately with SSR token */}
           <Chart 
             token={chartToken} 
             className="flex-1 min-h-0" 
           />
-
-          {/* Chat below chart */}
-           <BotPositions 
+          <BotPositions 
             trades={trades} 
             token={currentToken}
             botConfig={BOT_CONFIG}
@@ -198,39 +265,67 @@ export function TradingTerminal({
           />
         </div>
 
-      
-         <RightSidebar 
-        marketContent={<>
-        
-         <TokenInfo 
-            token={chartToken} 
-            isActive={!!currentToken}
-            className="p-4 border-b border-zinc-800" 
-          />
-
-       <LiveTrades wsTrades={trades} /> </>}
-        predictionsContent={<>
-        
-         <Predictions 
-          token={currentToken}
-          botConfig={BOT_CONFIG}
-          className=""
-        /> </>}
-        className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]"
-      />  
+        {/* Right sidebar */}
+        <RightSidebar 
+          marketContent={
+            <>
+              <TokenInfo 
+                token={chartToken} 
+                isActive={!!currentToken}
+                className="p-4 border-b border-zinc-800" 
+              />
+              <LiveTrades wsTrades={trades} />
+            </>
+          }
+          predictionsContent={
+            <Predictions 
+              botConfig={BOT_CONFIG}
+              className=""
+            />
+          }
+          swapContent={
+            <TradeSidebar
+              currentToken={currentToken}
+              lastVerdict={verdict as any | null}
+              isAnalyzing={!!currentToken}
+            />
+          }
+          className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]"
+        />  
       </div>
-     
 
       {/* Status bar */}
       <footer className="h-8 border-t border-zinc-800 flex items-center justify-between px-4 text-xs text-zinc-600 bg-[#080808] shrink-0">
         <div className="flex items-center gap-4">
           <span>💬 {messages.length}</span>
           <span>📈 {trades.length} trades</span>
+          {isHolder && (
+            <span className="flex items-center gap-1 text-yellow-500">
+              <Crown size={12} />
+              Council Holder
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-zinc-700">Powered by Grok × nad.fun × Monad</span>
         </div>
       </footer>
+
+      {/* Token Search Modal - Only for holders */}
+      <TokenSearchModal
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSelectToken={handleTokenSelect}
+        isHolder={isHolder}
+        userAddress={address}
+      />
+
+      {/* Buy Council Modal - For non-holders */}
+      <BuyCouncilModal
+        isOpen={buyCouncilOpen}
+        onClose={() => setBuyCouncilOpen(false)}
+        onSuccess={handleCouncilPurchaseSuccess}
+      />
     </div>
   );
 }

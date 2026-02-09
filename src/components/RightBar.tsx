@@ -8,15 +8,16 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Brain } from 'lucide-react';
 
-type TabId = 'market' | 'predictions';
+type TabId = 'market' | 'predictions' | 'swap';
 
 interface RightSidebarProps {
   marketContent: React.ReactNode;
   predictionsContent: React.ReactNode;
+  swapContent: React.ReactNode;
   className?: string;
 }
 
-export function RightSidebar({ marketContent, predictionsContent, className = '' }: RightSidebarProps) {
+export function RightSidebar({ marketContent, predictionsContent, swapContent, className = '' }: RightSidebarProps) {
   const [activeTab, setActiveTab] = useState<TabId>('market');
 
   return (
@@ -64,11 +65,31 @@ export function RightSidebar({ marketContent, predictionsContent, className = ''
             />
           )}
         </button>
+         <button
+          onClick={() => setActiveTab('swap')}
+          className={`
+            flex-1 flex items-center justify-center gap-2 px-4 py-3
+            text-sm font-medium transition-all relative
+            ${activeTab === 'swap' 
+              ? 'text-white' 
+              : 'text-zinc-500 hover:text-zinc-300'
+            }
+          `}
+        >
+          <span>Swap</span>
+          {activeTab === 'swap' && (
+            <motion.div
+              layoutId="activeTabIndicator"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+          )}
+        </button>
       </div>
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto">
-        {activeTab === 'market' ? marketContent : predictionsContent}
+        {activeTab === 'market' ? marketContent : activeTab === 'predictions' ? predictionsContent : swapContent}
       </div>
     </div>
   );

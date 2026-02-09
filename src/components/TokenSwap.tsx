@@ -1,5 +1,5 @@
 // ============================================================
-// MINI SWAP — Buy tokens via nad.fun bonding curve (Mainnet)
+// TOKEN SWAP — Buy the token currently being analyzed
 // ============================================================
 
 'use client';
@@ -8,12 +8,12 @@ import { useState, useEffect } from 'react';
 import { useAccount, useBalance, usePublicClient, useWalletClient } from 'wagmi';
 import { parseEther, formatEther, encodeFunctionData } from 'viem';
 import { 
-  Coins, 
-  ArrowDown, 
   Loader2, 
   CheckCircle, 
   AlertCircle,
   ExternalLink,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 
 // Mainnet addresses
@@ -62,30 +62,36 @@ const ROUTER_ABI = [
   },
 ] as const;
 
-interface MiniSwapProps {
+interface TokenSwapProps {
   tokenAddress: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  tokenSymbol: string;
+  tokenName?: string;
+  tokenImage?: string;
+  tokenPrice?: number;
+  onSuccess?: (txHash: string, amountOut: string) => void;
+  onClose?: () => void;
+  compact?: boolean; // Compact mode for sidebar
 }
 
-interface TokenInfo {
-  symbol: string;
-  name: string;
-  price: number;
-  image?: string;
-}
-
-export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
-  const { address } = useAccount();
+export function TokenSwap({ 
+  tokenAddress, 
+  tokenSymbol, 
+  tokenName,
+  tokenImage,
+  tokenPrice,
+  onSuccess, 
+  onClose,
+  compact = false,
+}: TokenSwapProps) {
+  const { address, isConnected } = useAccount();
   const { data: balance } = useBalance({ address });
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
   
   const [amount, setAmount] = useState('1');
-  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
-  const [isLoadingInfo, setIsLoadingInfo] = useState(true);
   const [estimatedTokens, setEstimatedTokens] = useState<string>('0');
   const [quote, setQuote] = useState<{ router: string; amountOut: bigint } | null>(null);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   
   // Transaction states
   const [isPending, setIsPending] = useState(false);
@@ -94,47 +100,16 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch token info
-  useEffect(() => {
-    const fetchToken = async () => {
-     
-
-      try {
-        const res = await fetch(`https://api.nadapp.net/token/0xbD489B45f0f978667fBaf373D2cFA133244F7777`);
-        console.log("res", res);
-        if (res.ok) {
-          const data = await res.json();
-          console.log("data", data);
-          const tokenInfo = data.token_info;
-          setTokenInfo({
-            symbol: tokenInfo.symbol || 'TOKEN',
-            name: tokenInfo.name || 'Unknown Token',
-            price: tokenInfo.price || 0,
-            image: tokenInfo.image_uri 
-          });
-          setEstimatedTokens(tokenInfo.total_supply);
-        }
-      } catch (err) {
-        console.error('Failed to fetch token:', err);
-      } finally {
-        setIsLoadingInfo(false);
-      }
-    };
-
-    fetchToken();
-  }, [address]);
-
-  console.log("tokenInfo", tokenInfo);
-
   // Get quote when amount changes
   useEffect(() => {
     const getQuote = async () => {
-      if (!publicClient || !amount || parseFloat(amount) <= 0) {
+      if (!publicClient || !amount || parseFloat(amount) <= 0 || !tokenAddress) {
         setEstimatedTokens('0');
         setQuote(null);
         return;
       }
 
+      setIsLoadingQuote(true);
       try {
         const amountIn = parseEther(amount);
         
@@ -150,16 +125,21 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
       } catch (err) {
         console.error('Quote error:', err);
         // Fallback to price-based estimate
-        if (tokenInfo?.price && tokenInfo.price > 0) {
-          const est = parseFloat(amount) / tokenInfo.price;
+        if (tokenPrice && tokenPrice > 0) {
+          const est = parseFloat(amount) / tokenPrice;
           setEstimatedTokens(est.toFixed(2));
+        } else {
+          setEstimatedTokens('0');
         }
+        setQuote(null);
+      } finally {
+        setIsLoadingQuote(false);
       }
     };
 
     const debounce = setTimeout(getQuote, 300);
     return () => clearTimeout(debounce);
-  }, [amount, tokenAddress, publicClient, tokenInfo?.price]);
+  }, [amount, tokenAddress, publicClient, tokenPrice]);
 
   const handleBuy = async () => {
     if (!address || !walletClient || !publicClient || !amount || parseFloat(amount) <= 0) {
@@ -173,7 +153,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
       const amountIn = parseEther(amount);
       
       // 1. Get fresh quote
-      console.log('🔍 Getting quote...');
+      console.log('🔍 Getting quote for', tokenSymbol);
       const [router, amountOut] = await publicClient.readContract({
         address: CONFIG.LENS,
         abi: LENS_ABI,
@@ -222,6 +202,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
       if (receipt.status === 'success') {
         setIsConfirming(false);
         setIsSuccess(true);
+        onSuccess?.(hash, formatEther(amountOut));
       } else {
         throw new Error('Transaction failed');
       }
@@ -236,12 +217,13 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
 
   const maxBalance = balance ? parseFloat(formatEther(balance.value)) : 0;
 
-  console.log("maxBalance", maxBalance);
-
-  if (isLoadingInfo) {
+  // Not connected state
+  if (!isConnected) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+      <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
+        <div className="text-center py-4">
+          <p className="text-sm text-zinc-400">Connect wallet to trade</p>
+        </div>
       </div>
     );
   }
@@ -249,113 +231,127 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
   // Success state
   if (isSuccess && txHash) {
     return (
-      <div className="text-center py-6">
-      
-        <h3 className="text-lg font-bold text-white mb-2">Purchase Complete!</h3>
-        <p className="text-sm text-zinc-400 mb-4">
-          You bought ~{parseFloat(estimatedTokens).toLocaleString()} {tokenInfo?.symbol || 'tokens'}
-        </p>
-        <a
-          href={`https://monadexplorer.com/tx/${txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm text-white hover:text-white"
-        >
-          View transaction <ExternalLink className="w-4 h-4" />
-        </a>
-        <button
-          onClick={onSuccess}
-          className="w-full mt-4 py-2.5 bg-white text-black rounded-lg font-bold hover:bg-zinc-100 transition-all"
-        >
-          Continue to Bet
-        </button>
+      <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
+        <div className="text-center py-4">
+         
+          <h3 className="text-sm font-bold text-white mb-1">Purchase Complete!</h3>
+          <p className="text-xs text-zinc-400 mb-3">
+            You bought ~{parseFloat(estimatedTokens).toLocaleString()} ${tokenSymbol}
+          </p>
+          <a
+            href={`https://monadexplorer.com/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-white hover:text-white"
+          >
+            View transaction <ExternalLink className="w-3 h-3" />
+          </a>
+          <button
+            onClick={() => {
+              setIsSuccess(false);
+              setTxHash(null);
+              setAmount('1');
+            }}
+            className="w-full mt-3 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-zinc-700 transition-all"
+          >
+            Buy More
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-     
+    <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+         
+          <div>
+            <span className="text-sm font-bold text-white">{tokenSymbol}</span>
+          </div>
+        </div>
+        <a
+          href={`https://nad.fun/token/${tokenAddress}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-zinc-500 hover:text-white flex items-center gap-1"
+        >
+          nad.fun <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
 
-      {/* From: MON */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-zinc-500">You pay</span>
-          <span className="text-xs text-zinc-500">
-            Balance: {maxBalance.toFixed(4)} MON
+      {/* Amount Input */}
+      <div className="bg-black/30 border border-zinc-800 rounded-lg p-3 mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-zinc-500 uppercase">You Pay</span>
+          <span className="text-[10px] text-zinc-500">
+            Balance: {maxBalance.toFixed(2)} MON
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="flex-1 bg-transparent text-xl font-bold text-white focus:outline-none"
+            className="flex-1 bg-transparent text-lg font-bold text-white focus:outline-none max-w-[80%]"
             placeholder="0.0"
             min="0"
             step="0.1"
           />
-         
+          <span className="text-sm font-medium text-zinc-400">MON</span>
         </div>
+        
         {/* Quick amounts */}
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-1.5 mt-2">
           {[1, 5, 10].map((val) => (
             <button
               key={val}
               onClick={() => setAmount(val.toString())}
-              className={`px-3 py-1 rounded text-xs transition-all ${
+              className={`flex-1 py-1 rounded text-xs transition-all ${
                 amount === val.toString()
-                  ? 'bg-white text-black'
+                  ? 'bg-white text-black font-medium'
                   : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
               }`}
             >
-              {val} MON
+              {val}
             </button>
           ))}
           <button
-            onClick={() => setAmount((maxBalance * 0.5).toFixed(2))}
-            className="px-3 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
+            onClick={() => setAmount(Math.max(0, maxBalance - 0.1).toFixed(2))}
+            className="flex-1 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
           >
-            50%
+            MAX
           </button>
         </div>
       </div>
 
-    
-
-      {/* To: Token */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-zinc-500">You receive (estimated)</span>
-          {quote && (
-            <span className="text-[10px] text-green-400">Quote ready ✓</span>
-          )}
+      {/* Estimated Output */}
+      <div className="bg-black/30 border border-zinc-800 rounded-lg p-3 mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-zinc-500 uppercase">You Receive</span>
+          {isLoadingQuote ? (
+            <Loader2 className="w-3 h-3 animate-spin text-zinc-500" />
+          ) : quote ? (
+            <span className="text-[10px] text-green-400">Quote ready</span>
+          ) : null}
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex-1 text-xl font-bold text-white">
-            {parseFloat(estimatedTokens).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        <div className="flex items-center gap-2">
+          <span className="flex-1 text-lg font-bold text-white">
+            {isLoadingQuote ? '...' : parseFloat(estimatedTokens).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </span>
-          <div className="flex items-center gap-2 bg-zinc-800 px-3 py-1.5 rounded-lg">
-            {tokenInfo?.image ? (
-              <img src={tokenInfo.image} alt="" className="w-6 h-6 rounded-full" />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-500 flex items-center justify-center text-xs font-bold">
-                {tokenInfo?.symbol?.charAt(0) || '?'}
-              </div>
-            )}
-            <span className="text-white font-medium">{tokenInfo?.symbol || 'TOKEN'}</span>
-          </div>
+          <span className="text-sm font-medium text-zinc-400">${tokenSymbol}</span>
         </div>
-        <p className="text-[10px] text-zinc-600 mt-2">
-          2% slippage tolerance included
+        <p className="text-[10px] text-zinc-600 mt-1">
+          2% slippage tolerance • via nad.fun
         </p>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+        <div className="p-2 mb-3 bg-red-500/10 border border-red-500/30 rounded-lg">
           <p className="text-xs text-red-400 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <AlertCircle className="w-3 h-3 flex-shrink-0" />
             {error}
           </p>
         </div>
@@ -366,10 +362,10 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
         onClick={handleBuy}
         disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance}
         className={`
-          w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2
+          w-full py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2
           ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
             ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-            : 'bg-gradient-to-r from-white to-white hover:from-white hover:to-white text-black '
+            : 'bg-white hover:bg-zinc-100 text-black'
           }
         `}
       >
@@ -387,27 +383,57 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
           'Insufficient balance'
         ) : (
           <>
-            Buy {tokenInfo?.symbol || 'Token'}
+            Buy ${tokenSymbol}
           </>
         )}
       </button>
 
-      {/* Cancel link */}
-      {onCancel && (
+      {/* Close button */}
+      {onClose && (
         <button
-          onClick={onCancel}
-          className="w-full text-center text-xs text-zinc-500 hover:text-white transition-all"
+          onClick={onClose}
+          className="w-full mt-2 text-center text-xs text-zinc-500 hover:text-white transition-all"
         >
           Cancel
         </button>
       )}
-
-      {/* Powered by */}
-      <p className="text-center text-[10px] text-zinc-600">
-        Powered by nad.fun
-      </p>
     </div>
   );
 }
 
-export default MiniSwap;
+// ============================================================
+// MINI VERSION — For embedding in chat sidebar
+// ============================================================
+
+interface MiniTokenSwapProps {
+  tokenAddress?: string;
+  tokenSymbol?: string;
+  tokenImage?: string;
+}
+
+export function MiniTokenSwap({ tokenAddress, tokenSymbol, tokenImage }: MiniTokenSwapProps) {
+  const { isConnected } = useAccount();
+
+  if (!tokenAddress || !tokenSymbol) {
+    return (
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+        <div className="text-center py-6">
+          <TrendingUp className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+          <p className="text-sm text-zinc-500">Waiting for token...</p>
+          <p className="text-xs text-zinc-600 mt-1">The Council will analyze a token soon</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <TokenSwap
+      tokenAddress={tokenAddress}
+      tokenSymbol={tokenSymbol}
+      tokenImage={tokenImage}
+      compact={true}
+    />
+  );
+}
+
+export default TokenSwap;

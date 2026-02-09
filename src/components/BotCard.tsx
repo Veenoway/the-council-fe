@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useEffect, useState } from 'react';
-import { Token, Trade, BotId, BotPosition, BotPortfolio } from '@/types';
+import { Token, Trade, BotId,   } from '@/types';
 
 // ============================================================
 // TYPES
@@ -29,8 +29,8 @@ interface BotFullData {
   name: string;
   personality: string;
   stats: BotStats | null;
-  portfolio: BotPortfolio | null;
-  recentTrades: Trade[];
+  portfolio: any | null;
+  recentTrades: any[];
 }
 
 interface BotCardsProps {
@@ -40,9 +40,6 @@ interface BotCardsProps {
   className?: string;
 }
 
-// ============================================================
-// BOT PERSONALITIES
-// ============================================================
 
 const BOT_PERSONALITIES: Record<BotId, string> = {
   chad: "degen energy, apes first asks questions later",
@@ -52,9 +49,6 @@ const BOT_PERSONALITIES: Record<BotId, string> = {
   oracle: "mysterious, sees patterns others miss",
 };
 
-// ============================================================
-// COMPONENT
-// ============================================================
 
 export function BotCards({ trades, token, botConfig, className = '' }: BotCardsProps) {
   const [botsData, setBotsData] = useState<BotFullData[]>([]);
@@ -64,9 +58,6 @@ export function BotCards({ trades, token, botConfig, className = '' }: BotCardsP
   const allBots: BotId[] = ['chad', 'quantum', 'sensei', 'sterling', 'oracle'];
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 
-  // --------------------------------------------------------
-  // FETCH ALL DATA
-  // --------------------------------------------------------
   const fetchData = async () => {
     try {
       const [positionsRes, botsRes] = await Promise.all([
@@ -294,12 +285,12 @@ export function BotCards({ trades, token, botConfig, className = '' }: BotCardsP
                       <h4 className="text-xs text-zinc-500 uppercase tracking-wide mb-3 flex items-center gap-1">
                         <span>💰</span> Holdings
                       </h4>
-                      {bot.portfolio && bot.portfolio.positions.filter(p => p.isOpen).length > 0 ? (
+                      {bot.portfolio && bot.portfolio.positions.filter((p: any) => p.isOpen).length > 0 ? (
                         <div className="space-y-2">
                           {bot.portfolio.positions
-                            .filter(p => p.isOpen)
+                            .filter((p: any) => p.isOpen)
                             .slice(0, 5)
-                            .map((pos) => (
+                            .map((pos: any) => (
                               <div key={pos.id} className="flex justify-between items-center text-sm">
                                 <span className="text-white font-medium">${pos.tokenSymbol}</span>
                                 <span className={`flex items-center gap-1 ${
