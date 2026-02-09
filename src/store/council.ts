@@ -3,7 +3,7 @@
 // ============================================================
 
 import { create } from 'zustand';
-import type { Message, Trade, Token, BotStats, Verdict, BotId } from '@/types';
+import type { Message, Trade, Token, Verdict, BotId } from '@/types';
 
 interface CouncilState {
   // Connection
@@ -29,8 +29,8 @@ interface CouncilState {
   updateTrade: (id: string, updates: Partial<Trade>) => void;
 
   // Bot stats
-  botStats: Record<BotId, BotStats>;
-  setBotStats: (stats: BotStats[]) => void;
+  botStats: Record<BotId, any>;
+  setBotStats: (stats: any[]) => void;
 
   // UI state
   selectedBot: BotId | null;
@@ -81,12 +81,12 @@ export const useCouncilStore = create<CouncilState>((set) => ({
     })),
 
   // Bot stats
-  botStats: {} as Record<BotId, BotStats>,
+  botStats: {} as Record<BotId, any>,
   setBotStats: (stats) =>
     set({
       botStats: stats.reduce(
         (acc, s) => ({ ...acc, [s.botId]: s }),
-        {} as Record<BotId, BotStats>
+        {} as Record<BotId, any>
       ),
     }),
 

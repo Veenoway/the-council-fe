@@ -44,6 +44,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 interface TradingTerminalProps {
   initialToken?: Token | null;
   initialMessages?: Message[];
+  initialTrades?: Trade[];
 }
 
 // ============================================================
@@ -52,17 +53,17 @@ interface TradingTerminalProps {
 
 export function TradingTerminal({ 
   initialToken = null, 
-  initialMessages = [] 
+  initialMessages = [],
+  initialTrades = []
 }: TradingTerminalProps) {
   // Initialize with SSR data
   const [currentToken, setCurrentToken] = useState<Token | null>(initialToken);
   const [previousToken, setPreviousToken] = useState<Token | null>(initialToken);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [trades, setTrades] = useState<Trade[]>([]);
   const [verdict, setVerdict] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const { address } = useAccount();
-
+  const [trades, setTrades] = useState<Trade[]>(initialTrades);
   // Modal states
   const [searchOpen, setSearchOpen] = useState(false);
   const [buyCouncilOpen, setBuyCouncilOpen] = useState(false);
@@ -72,6 +73,8 @@ export function TradingTerminal({
   const { isConnected, lastMessage } = useWebSocket(
     process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'
   );
+
+  console.log("initialMessages", initialMessages);
 
   // --------------------------------------------------------
   // CHECK HOLDER STATUS
