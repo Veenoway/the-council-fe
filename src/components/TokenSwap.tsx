@@ -217,18 +217,7 @@ export function TokenSwap({
 
   const maxBalance = balance ? parseFloat(formatEther(balance.value)) : 0;
 
-  // Not connected state
-  if (!isConnected) {
-    return (
-      <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
-        <div className="text-center py-4">
-          <p className="text-sm text-zinc-400">Connect wallet to trade</p>
-        </div>
-      </div>
-    );
-  }
 
-  // Success state
   if (isSuccess && txHash) {
     return (
       <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
@@ -266,19 +255,8 @@ export function TokenSwap({
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-         
-          <div>
-            <span className="text-sm font-bold text-white">{tokenSymbol}</span>
-          </div>
+            <span className="text-sm font-bold uppercase text-white">{tokenSymbol}</span>
         </div>
-        <a
-          href={`https://nad.fun/token/${tokenAddress}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-zinc-500 hover:text-white flex items-center gap-1"
-        >
-          nad.fun <ExternalLink className="w-3 h-3" />
-        </a>
       </div>
 
       {/* Amount Input */}
@@ -379,9 +357,11 @@ export function TokenSwap({
             <Loader2 className="w-4 h-4 animate-spin" />
             Processing...
           </>
-        ) : parseFloat(amount) > maxBalance ? (
+        ) : parseFloat(amount) > maxBalance&& address ? (
           'Insufficient balance'
-        ) : (
+        ) : !address ? (
+            'Connect wallet'
+        ):(
           <>
             Buy ${tokenSymbol}
           </>

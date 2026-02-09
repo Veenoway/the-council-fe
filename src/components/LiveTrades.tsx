@@ -153,11 +153,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 text-zinc-400 animate-spin" />
           </div>
-        ) : error && uniqueTrades.length === 0 ? (
-          <div className="p-8 text-center text-red-400">
-            <p>{error}</p>
-          </div>
-        ) : uniqueTrades.length === 0 ? (
+        ) :uniqueTrades.length === 0 ? (
           <div className="p-8 text-center text-zinc-500">
             <p>No trades yet</p>
             <p className="text-sm mt-1">Waiting for Council to make moves...</p>
