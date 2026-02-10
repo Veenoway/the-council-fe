@@ -175,6 +175,7 @@ export function Chart({ token, className = '' }: ChartProps) {
           'display_market_status',
            'header_widget',  
            'create_volume_indicator_by_default',
+           'left_bar_time_scale',
         ],
         enabled_features: ENABLED_FEATURES,
 
@@ -233,7 +234,7 @@ export function Chart({ token, className = '' }: ChartProps) {
   }, [token?.address, isChartReady, currentSymbol, initChart]);
 
   return (
-    <div className={`relative bg-[#0a0a0a] rounded-lg overflow-hidden ${className}`}>
+    <div className={`relative bg-[#0a0a0a] rounded-lg  h-[calc(100vh - 486px)] overflow-hidden ${className}`} style={{ height: 'calc(100vh - 530px)' }}>
       {/* Loading overlay - only show before first chart */}
       {!isChartReady && (
         <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center z-10 w-full h-full">
@@ -255,7 +256,7 @@ export function Chart({ token, className = '' }: ChartProps) {
       )}
 
       {/* Chart container - always rendered */}
-      <div ref={containerRef} className="w-full h-full" />
+      <div ref={containerRef} className="w-full  h-full" />
     </div>
   );
 }
