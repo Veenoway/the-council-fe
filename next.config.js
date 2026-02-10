@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // Utilise Turbopack (Next.js 16 default)
+  turbopack: {},
+  
+  // Garde webpack config pour compatibilité si besoin
   webpack: (config) => {
-    config.resolve.fallback = { fs: false, net: false, tls: false };
-    config.externals.push('pino-pretty', 'encoding');
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@react-native-async-storage/async-storage': false,
+    };
     return config;
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
