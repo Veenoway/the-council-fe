@@ -1,12 +1,12 @@
 'use client';
 
 // ============================================================
-// BOT POSITIONS v3 — Pro Trading Terminal UI + Dialog Modal
+// BOT POSITIONS v4 — Pro Trading Terminal UI + Dialog Modal
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react';
 import { Token, Trade, BotId, Position } from '@/types';
-import { Grid2X2, Table2, X, ExternalLink, TrendingUp, TrendingDown, Wallet, BarChart3, Target, Trophy } from 'lucide-react';
+import { Grid2X2, Table2, X, ExternalLink, TrendingUp, TrendingDown, Wallet, BarChart3, Target, Trophy, Coins } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
 interface BotPositionsProps {
@@ -33,13 +33,15 @@ const tokenImageCache = new Map<string, string>();
 function TokenImage({ 
   address, 
   symbol, 
+  image,
   size = 'md' 
 }: { 
   address: string; 
   symbol: string; 
+  image: string | null;
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }) {
-  const [imageUrl, setImageUrl] = useState<string | null>(tokenImageCache.get(address) || null);
+  const [imageUrl, setImageUrl] = useState<string | null>(image ||tokenImageCache.get(address) || null);
   const [error, setError] = useState(false);
   
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
@@ -60,10 +62,8 @@ function TokenImage({
     const fetchImage = async () => {
       try {
         const res = await fetch(`${API_URL}/api/token/${address}`);
-        console.log("res", res);
         if (res.ok) {
           const data = await res.json();
-          console.log("datadddd", data);
           if (data?.token_info?.image_uri) {
             tokenImageCache.set(address, data?.token_info?.image_uri);
             setImageUrl(data?.token_info?.image_uri);
@@ -77,7 +77,6 @@ function TokenImage({
     fetchImage();
   }, [address, API_URL]);
 
-  // Fallback
   if (!imageUrl || error) {
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
     const colorIndex = parseInt(address.slice(-2), 16) % colors.length;
@@ -96,7 +95,7 @@ function TokenImage({
     <img
       src={imageUrl}
       alt={symbol}
-      className={`${sizeClasses[size]} rounded-full object-cover shrink-0 border border-zinc-800 object-center bg-zinc-900`}
+      className={`${sizeClasses[size]} rounded-full object-cover shrink-0 object-center bg-zinc-900`}
       onError={() => setError(true)}
     />
   );
@@ -107,8 +106,7 @@ function TokenImage({
 // ============================================================
 
 export function BotPositions({ trades, token, botConfig, className = '' }: BotPositionsProps) {
-  const [portfolios, setPortfolios] = useState<Position[]>([]);
-  const [botsData, setBotsData] = useState<any[]>([]);
+  const [portfolios, setPortfolios] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBot, setSelectedBot] = useState<BotId | null>(null);
   const [view, setView] = useState<'grid' | 'table'>('grid');
@@ -118,19 +116,10 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
 
   const fetchData = async () => {
     try {
-      const [posRes, botsRes] = await Promise.all([
-        fetch(`${API_URL}/api/positions`),
-        fetch(`${API_URL}/api/bots`),
-      ]);
-      
-      if (posRes.ok) {
-        const posData = await posRes.json();
-        setPortfolios(posData.portfolios || []);
-      }
-      
-      if (botsRes.ok) {
-        const botsData = await botsRes.json();
-        setBotsData(botsData.bots || []);
+      const res = await fetch(`${API_URL}/api/positions`);
+      if (res.ok) {
+        const data = await res.json();
+        setPortfolios(data.portfolios || []);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -145,8 +134,15 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
     return () => clearInterval(interval);
   }, []);
 
-  const getBotData = (botId: BotId) => botsData.find(b => b.botId === botId);
   const getPortfolio = (botId: BotId) => portfolios.find(p => p.botId === botId);
+
+  // Calculer les totaux depuis les portfolios
+  const totalValue = portfolios.reduce((sum, p) => sum + (p.totalCurrentValue || 0) + (p.monBalance || 0), 0);
+  const totalPnl = portfolios.reduce((sum, p) => sum + (p.pnlMON || 0), 0);
+  const totalInvested = portfolios.reduce((sum, p) => sum + (p.totalInvested || 0), 0);
+  const totalPnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+  const totalPositions = portfolios.reduce((sum, p) => sum + (p.openPositions || 0), 0);
+  const totalMonBalance = portfolios.reduce((sum, p) => sum + (p.monBalance || 0), 0);
 
   const formatMON = (value: number) => {
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
@@ -158,23 +154,18 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
     return `${sign}${value.toFixed(2)} (${sign}${percent.toFixed(1)}%)`;
   };
 
-  const totalValue = botsData.reduce((sum, b) => sum + (b.totalValue || 0), 0);
-  const totalPnl = botsData.reduce((sum, b) => sum + (b.totalPnl || 0), 0);
-  const totalOpenPositions = botsData.reduce((sum, b) => sum + (b.openPositions || 0), 0);
-  const totalTrades = botsData.reduce((sum, b) => sum + (b.totalTrades || 0), 0);
-
   return (
-    <div className={`${className} font-mono text-sm`}>
+    <div className={`${className} font-poppins text-sm`}>
       {/* Summary Bar */}
-      <div className="grid grid-cols-5 divide-x divide-zinc-800 bg-[#0a0a0a] rounded-lg ">
+      <div className="grid grid-cols-5 divide-x divide-zinc-800 bg-[#0a0a0a] rounded-lg">
         <SummaryCell label="COUNCIL VALUE" value={`${formatMON(totalValue)} MON`} />
         <SummaryCell 
           label="TOTAL P&L" 
-          value={formatPnL(totalPnl, totalValue > 0 ? (totalPnl / totalValue) * 100 : 0)}
+          value={formatPnL(totalPnl, totalPnlPercent)}
           color={totalPnl >= 0 ? 'green' : 'red'}
         />
-        <SummaryCell label="POSITIONS" value={totalOpenPositions.toString()} />
-        <SummaryCell label="TRADES" value={totalTrades.toString()} />
+        <SummaryCell label="POSITIONS" value={totalPositions.toString()} />
+        <SummaryCell label="LIQUID MON" value={`${formatMON(totalMonBalance)} MON`} />
         <SummaryCell 
           label="STATUS" 
           value={loading ? 'SYNCING...' : 'OPERATIONAL'}
@@ -213,7 +204,6 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
                 key={botId}
                 botId={botId}
                 config={botConfig[botId]}
-                data={getBotData(botId)}
                 portfolio={getPortfolio(botId)}
                 onClick={() => setSelectedBot(botId)}
                 token={token}
@@ -224,7 +214,6 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
           <BotTable 
             bots={allBots}
             botConfig={botConfig}
-            botsData={botsData}
             portfolios={portfolios}
             token={token}
             onSelectBot={setSelectedBot}
@@ -236,7 +225,6 @@ export function BotPositions({ trades, token, botConfig, className = '' }: BotPo
       <BotDetailDialog
         botId={selectedBot}
         config={selectedBot ? botConfig[selectedBot] : null}
-        data={selectedBot ? getBotData(selectedBot) : null}
         portfolio={selectedBot ? getPortfolio(selectedBot) : null}
         token={token}
         open={!!selectedBot}
@@ -268,20 +256,67 @@ function SummaryCell({ label, value, color }: { label: string; value: string; co
 interface BotColumnProps {
   botId: BotId;
   config: { name: string; imgURL: string; color: string };
-  data: any;
   portfolio: any | undefined;
   onClick: () => void;
   token: Token | null;
 }
 
-function BotColumn({ botId, config, data, portfolio, onClick, token }: BotColumnProps) {
-  const pnl = data?.totalPnl || 0;
-  const pnlPercent = data?.unrealizedPnlPercent || 0;
-  const value = data?.totalValue || 0;
-  const openPos = data?.openPositions || 0;
-  
-  const holdings = portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [];
+// Agrège les positions par token
+function aggregatePositions(positions: any[]) {
+  if (!positions || positions.length === 0) return [];
 
+  const grouped = positions.reduce((acc: Record<string, any>, pos) => {
+    const key = pos.tokenAddress;
+    
+    if (!acc[key]) {
+      acc[key] = {
+        tokenAddress: pos.tokenAddress,
+        tokenSymbol: pos.tokenSymbol,
+        tokenImage: pos.tokenImage,
+        totalEntryValueMON: 0,
+        totalCurrentValueMON: 0,
+        totalAmount: 0,
+        count: 0,
+      };
+    }
+    
+    acc[key].totalEntryValueMON += pos.entryValueMON || 0;
+    acc[key].totalCurrentValueMON += pos.currentValueMON || 0;
+    acc[key].totalAmount += pos.amount || 0;
+    acc[key].count += 1;
+    
+    return acc;
+  }, {});
+
+  return Object.values(grouped).map((holding: any) => {
+    const pnlMON = holding.totalCurrentValueMON - holding.totalEntryValueMON;
+    const pnlPercent = holding.totalEntryValueMON > 0 
+      ? (pnlMON / holding.totalEntryValueMON) * 100 
+      : 0;
+    
+    return {
+      ...holding,
+      pnlMON,
+      pnlPercent,
+      value: holding.totalCurrentValueMON,
+    };
+  });
+}
+
+function BotColumn({ botId, config, portfolio, onClick, token }: BotColumnProps) {
+  const holdings = portfolio ? aggregatePositions(portfolio.positions) : [];
+  console.log("portfolio =====>", portfolio);
+  // Stats depuis le backend
+  const totalCurrentValue = portfolio?.totalCurrentValue ?? 0;
+  const monBalance = portfolio?.monBalance ?? 0;
+  const totalValue = totalCurrentValue + monBalance;
+  const pnlMON = portfolio?.pnlMON ?? 0;
+  const pnlPercent = portfolio?.pnlPercent ?? 0;
+  const wins = portfolio?.wins ?? 0;
+  const losses = portfolio?.losses ?? 0;
+  const winRate = portfolio?.winRate ?? 0;
+
+  console.log("holdings =====>", holdings);
   return (
     <div 
       onClick={onClick}
@@ -309,29 +344,32 @@ function BotColumn({ botId, config, data, portfolio, onClick, token }: BotColumn
       {/* Stats */}
       <div className="px-3 py-2 space-y-2">
         <div>
-          <p className="text-[10px] text-zinc-600">VALUE</p>
-          <p className="text-white font-bold">{value.toFixed(2)} <span className="text-zinc-500 text-xs">MON</span></p>
+          <p className="text-[10px] text-zinc-600">TOTAL VALUE</p>
+          <p className="text-white font-bold">
+            {totalValue.toFixed(2)} <span className="text-zinc-500 text-xs">MON</span>
+          </p>
+         
         </div>
 
         <div>
           <p className="text-[10px] text-zinc-600">P&L</p>
-          <p className={`font-bold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {pnl >= 0 ? '+' : ''}{pnl.toFixed(3)}
+          <p className={`font-bold ${pnlMON >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {pnlMON >= 0 ? '+' : ''}{pnlMON.toFixed(2)}
             <span className="text-xs ml-1">({pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%)</span>
           </p>
         </div>
 
         <div>
           <p className="text-[10px] text-zinc-600">POSITIONS</p>
-          <p className="text-white">{openPos}</p>
+          <p className="text-white">{holdings.length}</p>
         </div>
 
         <div>
           <p className="text-[10px] text-zinc-600">WIN RATE</p>
           <p className="text-white">
-            {data?.winRate?.toFixed(0) || 0}%
+            {winRate.toFixed(0)}%
             <span className="text-zinc-500 text-xs ml-1">
-              ({data?.wins || 0}W/{data?.losses || 0}L)
+              ({wins}W/{losses}L)
             </span>
           </p>
         </div>
@@ -342,14 +380,28 @@ function BotColumn({ botId, config, data, portfolio, onClick, token }: BotColumn
         <div className="px-3 py-2 bg-zinc-900/30">
           <p className="text-[10px] text-zinc-600 mb-1">HOLDINGS</p>
           <div className="flex items-center gap-1">
-            {holdings.slice(0, 4).map((holding) => (
-              <TokenImage 
-                key={holding.tokenAddress}
-                address={holding.tokenAddress} 
-                symbol={holding.tokenSymbol} 
-                size="md" 
-              />
-            ))}
+            <div className="flex items-center -space-x-2">
+              {holdings
+                .sort((a, b) => b.pnlPercent - a.pnlPercent)
+                .slice(0, 4)
+                .map((holding, index) => (
+                  <div 
+                    key={holding.tokenAddress} 
+                    className="ring-2 ring-[#0a0a0a] rounded-full"
+                    style={{ zIndex: 10 - index }}
+                  >
+                    <TokenImage 
+                      address={holding.tokenAddress} 
+                      symbol={holding.tokenSymbol} 
+                      image={holding.tokenImage}
+                      size="md" 
+                    />
+                  </div>
+                ))}
+              {holdings.length > 4 && (
+                <span className="text-[10px] text-zinc-500 ml-2">+{holdings.length - 4}</span>
+              )}
+            </div>
             {holdings.length > 4 && (
               <p className="text-[10px] ml-2 text-zinc-600">+{holdings.length - 4}</p>
             )}
@@ -371,33 +423,38 @@ function BotColumn({ botId, config, data, portfolio, onClick, token }: BotColumn
 interface BotTableProps {
   bots: BotId[];
   botConfig: Record<BotId, { name: string; imgURL: string; color: string }>;
-  botsData: any[];
   portfolios: any[];
   token: Token | null;
   onSelectBot: (botId: BotId) => void;
 }
 
-function BotTable({ bots, botConfig, botsData, portfolios, token, onSelectBot }: BotTableProps) {
+function BotTable({ bots, botConfig, portfolios, token, onSelectBot }: BotTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead className="bg-zinc-900/50">
           <tr className="text-left text-zinc-500 uppercase">
             <th className="px-3 py-2">Bot</th>
-            <th className="px-3 py-2 text-right">Value</th>
+            <th className="px-3 py-2 text-right">Total Value</th>
+            <th className="px-3 py-2 text-right">Holdings</th>
+            <th className="px-3 py-2 text-right">Cash</th>
             <th className="px-3 py-2 text-right">P&L</th>
-            <th className="px-3 py-2 text-right">P&L %</th>
-            <th className="px-3 py-2 text-right">Positions</th>
             <th className="px-3 py-2 text-right">Win Rate</th>
-            <th className="px-3 py-2">Holdings</th>
+            <th className="px-3 py-2">Tokens</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800">
           {bots.map((botId) => {
             const config = botConfig[botId];
-            const data = botsData.find(b => b.botId === botId);
             const portfolio = portfolios.find(p => p.botId === botId);
-            const holdings = portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [];
+            const holdings = portfolio ? aggregatePositions(portfolio.positions) : [];
+            
+            const totalCurrentValue = portfolio?.totalCurrentValue ?? 0;
+            const monBalance = portfolio?.monBalance ?? 0;
+            const totalValue = totalCurrentValue + monBalance;
+            const pnlMON = portfolio?.pnlMON ?? 0;
+            const pnlPercent = portfolio?.pnlPercent ?? 0;
+            const winRate = portfolio?.winRate ?? 0;
 
             return (
               <tr 
@@ -414,26 +471,26 @@ function BotTable({ bots, botConfig, botsData, portfolios, token, onSelectBot }:
                     </div>
                   </div>
                 </td>
-                <td className="px-3 py-2 text-right font-mono text-white">
-                  {(data?.totalValue || 0).toFixed(2)} MON
+                <td className="px-3 py-2 text-right font-poppins text-white">
+                  {totalValue.toFixed(2)} MON
                 </td>
-                <td className={`px-3 py-2 text-right font-mono ${(data?.totalPnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(data?.totalPnl || 0) >= 0 ? '+' : ''}{(data?.totalPnl || 0).toFixed(3)}
+                <td className="px-3 py-2 text-right font-poppins text-zinc-400">
+                  {totalCurrentValue.toFixed(2)}
                 </td>
-                <td className={`px-3 py-2 text-right font-mono ${(data?.unrealizedPnlPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(data?.unrealizedPnlPercent || 0) >= 0 ? '+' : ''}{(data?.unrealizedPnlPercent || 0).toFixed(1)}%
+                <td className="px-3 py-2 text-right font-poppins text-zinc-400">
+                  {monBalance.toFixed(2)}
+                </td>
+                <td className={`px-3 py-2 text-right font-poppins ${pnlMON >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {pnlMON >= 0 ? '+' : ''}{pnlMON.toFixed(2)} ({pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%)
                 </td>
                 <td className="px-3 py-2 text-right text-white">
-                  {data?.openPositions || 0}
-                </td>
-                <td className="px-3 py-2 text-right text-white">
-                  {(data?.winRate || 0).toFixed(0)}%
+                  {winRate.toFixed(0)}%
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex -space-x-1.5">
                     {holdings.slice(0, 4).map((h) => (
                       <div key={h.tokenAddress} className="ring-1 ring-zinc-900 rounded-full">
-                        <TokenImage address={h.tokenAddress} symbol={h.tokenSymbol} size="sm" />
+                        <TokenImage address={h.tokenAddress} symbol={h.tokenSymbol} image={h.tokenImage} size="sm" />
                       </div>
                     ))}
                     {holdings.length > 4 && (
@@ -458,32 +515,42 @@ function BotTable({ bots, botConfig, botsData, portfolios, token, onSelectBot }:
 interface BotDetailDialogProps {
   botId: BotId | null;
   config: { name: string; imgURL: string; color: string } | null;
-  data: any;
   portfolio: any | undefined | null;
   token: Token | null;
   open: boolean;
   onClose: () => void;
 }
 
-function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, open, onClose }: BotDetailDialogProps) {
+const BOT_WALLETS: Record<BotId, string> = {
+  sensei: "0xE4F9910930bE9e9cbe3b635b027197A838899fe4",
+  quantum: "0xaC5b2f17569361478729420B5f5e0e504BA095e9",
+  chad: "0xE5BDfb5a86C0D59F2711A6475A7bb2aA90f9aeE2",
+  sterling: "0xd8778E6D072bE21eB427146002D8107eAAdbcf37",
+  oracle: "0xB44510836DED11996F4f26B337Bb2FBDc16321cb",
+};
+
+function BotDetailDialog({ botId, config, portfolio, token, open, onClose }: BotDetailDialogProps) {
   if (!botId || !config) return null;
 
-  const data = useMemo(() => ({
-    ...dataBuffer,
-    walletAddress: dataBuffer?.botId === "sensei" ? "0xE4F9910930bE9e9cbe3b635b027197A838899fe4" : dataBuffer?.walletAddress
-  }), [dataBuffer]);
-
-  const holdings = useMemo(() => portfolio ? aggregatePositions(portfolio.positions.filter((p: any) => p.isOpen)) : [], [portfolio]);
-  const pnl = data?.totalPnl || 0;
-  const pnlPercent = data?.unrealizedPnlPercent || 0;
-  console.log("data =====>", data);
+  const walletAddress = BOT_WALLETS[botId];
+  const holdings = useMemo(() => portfolio ? aggregatePositions(portfolio.positions) : [], [portfolio]);
+  
+  const totalCurrentValue = portfolio?.totalCurrentValue ?? 0;
+  const monBalance = portfolio?.monBalance ?? 0;
+  const totalValue = totalCurrentValue + monBalance;
+  const totalInvested = portfolio?.totalInvested ?? 0;
+  const pnlMON = portfolio?.pnlMON ?? 0;
+  const pnlPercent = portfolio?.pnlPercent ?? 0;
+  const wins = portfolio?.wins ?? 0;
+  const losses = portfolio?.losses ?? 0;
+  const winRate = portfolio?.winRate ?? 0;
 
   return (
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-          <div className="bg-[#0a0a0a] border border-zinc-700 rounded-xl shadow-2xl overflow-hidden font-mono">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          <div className="bg-[#0a0a0a] rounded-lg shadow-2xl overflow-hidden font-poppins">
             {/* Header */}
             <div 
               className="p-4 border-b border-zinc-800 relative"
@@ -500,9 +567,9 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
                     />
                     <div 
                       className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-zinc-900"
-                      style={{ backgroundColor: pnl >= 0 ? '#22c55e' : '#ef4444' }}
+                      style={{ backgroundColor: pnlMON >= 0 ? '#22c55e' : '#ef4444' }}
                     >
-                      {pnl >= 0 ? '↑' : '↓'}
+                      {pnlMON >= 0 ? '↑' : '↓'}
                     </div>
                   </div>
                   <div>
@@ -518,11 +585,11 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
                     <Dialog.Description className="text-sm text-zinc-400 mt-1">
                       {BOT_PERSONALITIES[botId].description}
                     </Dialog.Description>
-                    <p className="text-xs text-zinc-600 mt-2 font-mono flex items-center gap-1">
+                    <p className="text-xs text-zinc-600 mt-2 font-poppins flex items-center gap-1">
                       <Wallet className="w-3 h-3" />
-                      {data?.walletAddress?.slice(0, 10)}...{data?.walletAddress?.slice(-8)}
+                      {walletAddress?.slice(0, 10)}...{walletAddress?.slice(-8)}
                       <a 
-                        href={`https://monad.socialscan.io/address/${data?.walletAddress}`}
+                        href={`https://monad.socialscan.io/address/${walletAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-zinc-500 hover:text-white ml-1"
@@ -545,42 +612,45 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
               <StatCard 
                 icon={<Wallet className="w-4 h-4" />}
                 label="Total Value"
-                value={`${(data?.totalValue || 0).toFixed(2)} MON`}
+                value={`${totalValue.toFixed(2)} MON`}
+                subValue={`Invested: ${totalInvested.toFixed(2)}`}
               />
               <StatCard 
-                icon={pnl >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                label="Total P&L"
-                value={`${pnl >= 0 ? '+' : ''}${pnl.toFixed(3)} MON`}
+                icon={pnlMON >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                label="P&L"
+                value={`${pnlMON >= 0 ? '+' : ''}${pnlMON.toFixed(2)} MON`}
                 subValue={`${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(1)}%`}
-                color={pnl >= 0 ? 'green' : 'red'}
+                color={pnlMON >= 0 ? 'green' : 'red'}
               />
               <StatCard 
                 icon={<Target className="w-4 h-4" />}
                 label="Win Rate"
-                value={`${(data?.winRate || 0).toFixed(0)}%`}
-                subValue={`${data?.wins || 0}W / ${data?.losses || 0}L`}
+                value={`${winRate.toFixed(0)}%`}
+                subValue={`${wins}W / ${losses}L`}
               />
               <StatCard 
-                icon={<BarChart3 className="w-4 h-4" />}
-                label="Positions"
-                value={data?.openPositions || 0}
-                subValue={`${data?.closedTrades || 0} closed`}
+                icon={<Coins className="w-4 h-4" />}
+                label="Cash"
+                value={`${monBalance.toFixed(2)} MON`}
+                subValue="Available"
               />
             </div>
 
-            {/* P&L Breakdown */}
+            {/* Value Breakdown */}
             <div className="grid grid-cols-2 divide-x divide-zinc-800 border-b border-zinc-800">
-              <div className="p-4">
-                <p className="text-xs text-zinc-500 uppercase mb-2">Realized P&L</p>
-                <p className={`text-lg font-bold ${(data?.realizedPnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(data?.realizedPnl || 0) >= 0 ? '+' : ''}{(data?.realizedPnl || 0).toFixed(4)} MON
+              <div className="p-3">
+                <p className="text-xs text-zinc-500 mb-1">Holdings Value</p>
+                <p className="text-lg font-bold text-white">
+                  {totalCurrentValue.toFixed(2)} MON
                 </p>
+                <p className="text-xs text-zinc-600">{holdings.length} tokens</p>
               </div>
-              <div className="p-4">
-                <p className="text-xs text-zinc-500 uppercase mb-2">Unrealized P&L</p>
-                <p className={`text-lg font-bold ${(data?.unrealizedPnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(data?.unrealizedPnl || 0) >= 0 ? '+' : ''}{(data?.unrealizedPnl || 0).toFixed(4)} MON
+              <div className="p-3">
+                <p className="text-xs text-zinc-500 mb-1">Liquid MON</p>
+                <p className="text-lg font-bold text-white">
+                  {monBalance.toFixed(2)} MON
                 </p>
+                <p className="text-xs text-zinc-600">Ready to trade</p>
               </div>
             </div>
 
@@ -588,50 +658,55 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-                  <Trophy className="w-4 h-4" />
                   Open Holdings ({holdings.length})
                 </h3>
               </div>
               
               {holdings.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                  {holdings.map((h) => {
-                    const isLive = token?.address === h.tokenAddress;
-                    return (
-                      <div 
-                        key={h.tokenAddress}
-                        className={`flex items-center justify-between p-3 rounded-lg ${
-                          isLive 
-                            ? 'bg-green-500/10 border border-green-500/30' 
-                            : 'bg-zinc-800/50 border border-zinc-700/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <TokenImage address={h.tokenAddress} symbol={h.tokenSymbol} size="xl" />
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-white font-medium">${h.tokenSymbol}</span>
-                              {isLive && (
-                                <span className="flex items-center gap-1 text-[10px] text-green-400 bg-green-500/20 px-1.5 py-0.5 rounded">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                  LIVE
-                                </span>
-                              )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+                  {holdings
+                    .sort((a, b) => b.pnlPercent - a.pnlPercent)
+                    .map((h) => {
+                      const isLive = token?.address?.toLowerCase() === h.tokenAddress?.toLowerCase();
+                      const isPositive = h.pnlPercent >= 0;
+                      
+                      return (
+                        <div 
+                          key={h.tokenAddress}
+                          className={`flex items-center gap-2 p-2 rounded-lg transition-all bg-zinc-900/50`}
+                        >
+                          {/* Token image with PnL ring */}
+                          <div className={`relative p-0.5 rounded-full ${isPositive ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                            <TokenImage 
+                              address={h.tokenAddress} 
+                              symbol={h.tokenSymbol} 
+                              image={h.tokenImage} 
+                              size="lg" 
+                            />
+                            {isLive && (
+                              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500 border border-zinc-900"></span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white text-xs font-medium truncate">${h.tokenSymbol}</span>
+                              <span className={`text-xs font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                                {isPositive ? '+' : ''}{h.pnlPercent.toFixed(1)}%
+                              </span>
                             </div>
-                            <p className="text-[11px] text-zinc-500">
-                              {h.totalAmount.toFixed(2)} tokens · {h.count} pos
-                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-zinc-500">{h.value.toFixed(2)} MON</span>
+                              <span className="text-[10px] text-zinc-600">{h.count}x</span>
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className={`font-bold ${h.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {h.pnlPercent >= 0 ? '+' : ''}{h.pnlPercent.toFixed(1)}%
-                          </p>
-                          <p className="text-[11px] text-zinc-500">{h.value.toFixed(4)} MON</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-zinc-600">
@@ -645,7 +720,7 @@ function BotDetailDialog({ botId, config, data: dataBuffer, portfolio, token, op
             <div className="px-4 py-3 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-600">
               <span>Last updated: {new Date().toLocaleTimeString()}</span>
               <a 
-                href={`https://testnet.monadexplorer.com/address/${data?.walletAddress}`}
+                href={`https://monad.socialscan.io/address/${walletAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-zinc-500 hover:text-white transition-colors"
@@ -676,7 +751,7 @@ function StatCard({
   const colorClass = color === 'green' ? 'text-green-400' : color === 'red' ? 'text-red-400' : 'text-white';
   
   return (
-    <div className="p-4">
+    <div className="p-3">
       <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
         {icon}
         <span className="text-[10px] uppercase">{label}</span>
@@ -685,50 +760,6 @@ function StatCard({
       {subValue && <p className="text-xs text-zinc-500">{subValue}</p>}
     </div>
   );
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-interface AggregatedHolding {
-  tokenAddress: string;
-  tokenSymbol: string;
-  totalAmount: number;
-  value: number;
-  pnlPercent: number;
-  count: number;
-}
-
-function aggregatePositions(positions: any[]): AggregatedHolding[] {
-  const byToken: Record<string, AggregatedHolding> = {};
-  
-  for (const pos of positions) {
-    const addr = pos.tokenAddress;
-    if (!byToken[addr]) {
-      byToken[addr] = {
-        tokenAddress: addr,
-        tokenSymbol: pos.tokenSymbol,
-        totalAmount: 0,
-        value: 0,
-        pnlPercent: 0,
-        count: 0,
-      };
-    }
-    byToken[addr].totalAmount += pos.amount;
-    byToken[addr].value += pos.currentValueMON || 0;
-    byToken[addr].count += 1;
-  }
-  
-  for (const holding of Object.values(byToken)) {
-    const positions_for_token = positions.filter(p => p.tokenAddress === holding.tokenAddress);
-    const totalEntry = positions_for_token.reduce((sum, p) => sum + (p.entryValueMON || 0), 0);
-    if (totalEntry > 0) {
-      holding.pnlPercent = ((holding.value - totalEntry) / totalEntry) * 100;
-    }
-  }
-  
-  return Object.values(byToken).sort((a, b) => b.value - a.value);
 }
 
 export default BotPositions;

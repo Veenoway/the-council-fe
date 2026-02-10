@@ -74,7 +74,6 @@ export function TradingTerminal({
     process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'
   );
 
-  console.log("initialMessages", initialMessages);
 
   // --------------------------------------------------------
   // CHECK HOLDER STATUS
@@ -309,7 +308,7 @@ export function TradingTerminal({
               isAnalyzing={!!currentToken}
             />
           }
-          className="w-80 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]"
+          className="w-72 border-l border-zinc-800 flex flex-col shrink-0 bg-[#080808]"
         />  
       </div>
 

@@ -80,11 +80,8 @@ export function TradeSidebar({ currentToken, lastVerdict, isAnalyzing }: TradeSi
       <div className="overflow-hidden">
         {/* Swap Header */}
         <button
-          className="w-full px-4 py-3 flex items-center justify-between transition-colors"
+          className="w-full px-4 py-3 pt-1 flex items-center justify-between transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-white">Swap</span>
-          </div>
          
         </button>
 

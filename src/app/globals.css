@@ -5,21 +5,38 @@
 /* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
+  display: none;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
+  display: none;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 3px;
+  display: none;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #444;
+  display: none;
 }
 
+/* cache les scrollbars sur les navigateurs */
+::-webkit-scrollbar {
+  display: none;
+}
+::-webkit-scrollbar-track {
+  display: none;
+}
+::-webkit-scrollbar-thumb {
+  display: none;
+}
+::-webkit-scrollbar-thumb:hover {
+  display: none;
+}
 /* Selection color */
 ::selection {
   background: #00ff8840;
