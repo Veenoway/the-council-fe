@@ -259,7 +259,7 @@ export function TradingTerminal({
       </header>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden w-full">
         {/* Left side - Chat */} 
         <ChatPanel 
           messages={messages} 
@@ -268,10 +268,10 @@ export function TradingTerminal({
         />
         
         {/* Center - Chart + Positions */}
-        <div className="flex-1 flex flex-col p-2 gap-2 min-w-0">
+        <div className="flex flex-col p-2 gap-2 min-w-0 w-full">
           <Chart 
             token={chartToken} 
-            className="flex-1 min-h-0" 
+            className=" min-h-[calc(100vh - 486px)]" 
           />
           <BotPositions 
             trades={trades} 
