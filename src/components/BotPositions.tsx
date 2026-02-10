@@ -305,8 +305,6 @@ function aggregatePositions(positions: any[]) {
 
 function BotColumn({ botId, config, portfolio, onClick, token }: BotColumnProps) {
   const holdings = portfolio ? aggregatePositions(portfolio.positions) : [];
-  console.log("portfolio =====>", portfolio);
-  // Stats depuis le backend
   const totalCurrentValue = portfolio?.totalCurrentValue ?? 0;
   const monBalance = portfolio?.monBalance ?? 0;
   const totalValue = totalCurrentValue + monBalance;
@@ -316,7 +314,6 @@ function BotColumn({ botId, config, portfolio, onClick, token }: BotColumnProps)
   const losses = portfolio?.losses ?? 0;
   const winRate = portfolio?.winRate ?? 0;
 
-  console.log("holdings =====>", holdings);
   return (
     <div 
       onClick={onClick}

@@ -49,11 +49,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
               TRADE
             </span>
           )}
-          {message.messageType === 'verdict' && (
-            <span className="text-xs px-2 py-0.5 rounded bg-accent-purple/20 text-accent-purple">
-              VERDICT
-            </span>
-          )}
           <span className="text-xs text-gray-500">
             {timeAgo(new Date(message.createdAt))}
           </span>
@@ -64,17 +59,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           {message.content}
         </p>
 
-        {/* TX Hash if present */}
-        {message.txHash && (
-          <a
-            href={`https://monadvision.com/tx/${message.txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-accent-blue hover:underline mt-1 inline-block"
-          >
-            TX: {formatTxHash(message.txHash)}
-          </a>
-        )}
+      
       </div>
     </motion.div>
   );

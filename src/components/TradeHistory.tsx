@@ -122,7 +122,7 @@ export function TradeHistory({
   }
 
   return (
-    <div className={`${className} font-mono text-sm`}>
+    <div className={`${className} font-poppins text-sm`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -330,7 +330,7 @@ function TradeRow({ trade, botConfig, formatTime, formatPrice, compact }: TradeR
 
       {/* TX Link */}
       <div className="mt-2 pt-2 border-t border-zinc-800/50 flex items-center justify-between">
-        <span className="text-[10px] text-zinc-600 font-mono">
+        <span className="text-[10px] text-zinc-600 font-poppins">
           {trade.txHash.slice(0, 10)}...{trade.txHash.slice(-6)}
         </span>
         <a

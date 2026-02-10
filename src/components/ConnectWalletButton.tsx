@@ -37,7 +37,7 @@ export function ConnectWalletButton() {
           className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-900 rounded-lg px-3 py-2 transition-all"
         >
           <div className="w-2 h-2 bg-green-500 rounded-full" />
-          <span className="text-xs text-white font-mono">
+          <span className="text-xs text-white font-poppins">
             {formatAddress(address)}
           </span>
           {balance && (
@@ -59,7 +59,7 @@ export function ConnectWalletButton() {
               <div className="p-3 border-b border-zinc-800">
                 <p className="text-[10px] text-zinc-500 uppercase mb-1">Connected Wallet</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white font-mono">{formatAddress(address)}</span>
+                  <span className="text-sm text-white font-poppins">{formatAddress(address)}</span>
                   <div className="flex gap-1">
                     <button 
                       onClick={copyAddress}

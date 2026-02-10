@@ -304,7 +304,7 @@ export function BotCards({ trades, token, botConfig, className = '' }: BotCardsP
                           <div className="pt-2 mt-2 border-t border-zinc-800 space-y-1">
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Total Value</span>
-                              <span className="text-white font-mono">
+                              <span className="text-white font-poppins">
                                 {bot.portfolio.totalValue.toFixed(2)} MON
                               </span>
                             </div>

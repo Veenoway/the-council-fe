@@ -90,7 +90,7 @@ export function TokenInfo({ token, isActive = true, className = '' }: TokenInfoP
 
         <div className="flex justify-between text-sm">
           <span className="text-zinc-500">Price</span>
-          <span className="text-white font-mono text-xs">
+          <span className="text-white font-poppins text-xs">
             ${token.price.toFixed(10)}
           </span>
         </div>

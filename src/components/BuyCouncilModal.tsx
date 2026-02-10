@@ -45,7 +45,7 @@ export function BuyCouncilModal({ isOpen, onClose, onSuccess }: BuyCouncilModalP
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="relative w-full max-w-md bg-[#0a0a0a] border border-zinc-800 rounded-2xl overflow-hidden"
+          className="relative w-full max-w-md bg-[#0a0a0a] rounded-lg overflow-hidden"
         >
           {/* Close button */}
           <button
@@ -56,10 +56,10 @@ export function BuyCouncilModal({ isOpen, onClose, onSuccess }: BuyCouncilModalP
           </button>
 
            <div className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
               
                 <div>
-                  <h2 className="text-lg font-bold text-white">Buy $COUNCIL</h2>
+                  <h2 className="text-lg font-bold text-white mb-1">Buy $COUNCIL</h2>
                   <p className="text-xs text-zinc-500">Unlock holder benefits</p>
                 </div>
               </div>
