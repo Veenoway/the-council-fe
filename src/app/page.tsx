@@ -35,7 +35,7 @@ export default async function Home() {
   return (
     <TradingTerminal 
       initialToken={token} 
-      initialMessages={messages}
+      initialMessages={messages as unknown as Message[]}
       initialTrades={trades}  // Passer les trades
     />
   );

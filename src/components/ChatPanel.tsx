@@ -42,7 +42,7 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
     return botConfig[botId as BotId] || { name: botId, imgURL: '/bots/anon.jpg', color: '#666' };
   };
 
-  console.log('ChatPanel render, messages:', messages.length); // Debug log
+  console.log("messages =====>", messages);
 
   return (
     <div className={`bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full ${className}`}>

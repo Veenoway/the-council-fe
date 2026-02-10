@@ -102,7 +102,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
   const wsDisplayTrades: DisplayTrade[] = wsTrades.map((t: any) => ({
     id: t.id || t.txHash || `ws-${Date.now()}`,
     botId: t.botId,
-    botName: BOT_CONFIG[t.botId]?.name || t.botId,
+    botName:  t.botId?.includes('agent_') ? t.agentName : BOT_CONFIG[t.botId]?.name || t.botId,
     botColor: BOT_CONFIG[t.botId]?.color || '#666',
     botEmoji: BOT_CONFIG[t.botId]?.emoji || '🤖',
     tokenAddress: t.tokenAddress,
@@ -170,6 +170,8 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
   const isProfitable = trade.pnl > 0;
   const isBuy = trade.side === 'buy';
 
+
+  console.log("trade =====>", trade);
   return (
     <motion.div
       initial={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -187,14 +189,13 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm" style={{ color: trade.botColor }}>
-            {trade.botName}
+            {trade.botName?.length > 10 ? trade.botName.slice(0, 10) + '...' : trade.botName}
           </span>
           <span className={`flex items-center gap-1 text-xs font-thin ${isBuy ? 'text-green-400' : 'text-red-400'}`}>
-            {isBuy ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
             {trade.side.toUpperCase()}
           </span>
-          <span className="text-white font-bold text-sm">
-            ${trade.tokenSymbol}
+          <span className="text-white font-bold text-sm uppercase">
+            {trade.tokenSymbol}
           </span>
         </div>
         

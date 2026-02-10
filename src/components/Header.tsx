@@ -107,7 +107,7 @@ export function Header() {
                           onClick={openAccountModal}
                           className="px-4 py-2 bg-bg-tertiary rounded-lg hover:bg-bg-primary transition-colors"
                         >
-                          <span className="text-sm font-mono text-white">
+                          <span className="text-sm font-poppins text-white">
                             {account.displayName}
                           </span>
                           {account.displayBalance && (

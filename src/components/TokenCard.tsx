@@ -119,7 +119,7 @@ export function TokenCard() {
             href={`https://monadvision.com/address/${token.deployer}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent-blue hover:underline font-mono"
+            className="text-accent-blue hover:underline font-poppins"
           >
             {formatAddress(token.deployer)}
           </a>

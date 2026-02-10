@@ -43,7 +43,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 
 interface TradingTerminalProps {
   initialToken?: Token | null;
-  initialMessages?: Message[];
+  initialMessages?: Message[] | any;
   initialTrades?: Trade[];
 }
 
@@ -171,7 +171,15 @@ export function TradingTerminal({
         break;
 
       case 'trade':
-        setTrades(prev => [...prev, data]);
+          setTrades(prev => {
+            if (prev.some(t => t.id === data.id || t.txHash === data.txHash)) {
+              console.log('⏭️ Duplicate trade, skipping');
+              return prev;
+            }
+            const newTrades = [...prev, data];
+            console.log('📊 Updated trades:', newTrades.length);
+            return newTrades.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          });
         break;
 
       case 'verdict':
@@ -216,7 +224,7 @@ export function TradingTerminal({
                 </span>
               )}
             </div>
-            <span className="text-zinc-400 font-mono text-sm">
+            <span className="text-zinc-400 font-poppins text-sm">
               ${chartToken.price?.toFixed(10)}
             </span>
             {chartToken.priceChange24h !== undefined && chartToken.priceChange24h !== 0 && (
@@ -237,22 +245,12 @@ export function TradingTerminal({
                 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
                 ${isHolder 
                   ? 'bg-white hover:bg-zinc-100 text-black' 
-                  : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black'
+                  : 'bg-white text-black'
                 }
               `}
             >
-              {isHolder ? (
-                <>
-                  <Crown size={14} className="text-yellow-600" />
-                  <Search size={14} />
-                  <span>Search Token</span>
-                </>
-              ) : (
-                <>
-                  <Crown size={14} />
-                  <span>Get $COUNCIL</span>
-                </>
-              )}
+              <Search size={14} />
+              <span>Search Token</span>
             </button>
           ) : (
             <ConnectWalletButton />
