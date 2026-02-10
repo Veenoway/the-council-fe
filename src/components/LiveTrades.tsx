@@ -132,14 +132,10 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
   return (
     <div className="overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+      <div className="px-3 py-2 border-b border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="font-medium text-sm text-white">Live Trades</h2>
-          {wsTrades.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 text-xs font-bold">
-              +{wsTrades.length}
-            </span>
-          )}
+         
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -181,7 +177,7 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
       exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.3 }}
       className={`
-        flex items-center gap-3 px-4 py-3 border-b border-zinc-800/50
+        flex items-center gap-3 px-3 py-2 border-b border-zinc-800/50
         hover:bg-zinc-800/30 transition-colors cursor-pointer
       
       `}
@@ -190,10 +186,10 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-sm" style={{ color: trade.botColor }}>
+          <span className="font-medium text-sm" style={{ color: trade.botColor }}>
             {trade.botName}
           </span>
-          <span className={`flex items-center gap-1 text-xs font-bold ${isBuy ? 'text-green-400' : 'text-red-400'}`}>
+          <span className={`flex items-center gap-1 text-xs font-thin ${isBuy ? 'text-green-400' : 'text-red-400'}`}>
             {isBuy ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
             {trade.side.toUpperCase()}
           </span>
@@ -225,7 +221,7 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
           className="p-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <ExternalLink size={14} className="text-zinc-400" />
+          <ExternalLink size={14} className="text-zinc-400 hover:text-white transition-colors" />
         </a>
       )}
     </motion.div>

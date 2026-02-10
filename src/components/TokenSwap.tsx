@@ -220,7 +220,7 @@ export function TokenSwap({
 
   if (isSuccess && txHash) {
     return (
-      <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
+      <div className={``}>
         <div className="text-center py-4">
          
           <h3 className="text-sm font-bold text-white mb-1">Purchase Complete!</h3>
@@ -251,16 +251,16 @@ export function TokenSwap({
   }
 
   return (
-    <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl ${compact ? 'p-3' : 'p-4'}`}>
+    <div className={``}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-            <span className="text-sm font-bold uppercase text-white">{tokenSymbol}</span>
+            <span className="text-sm font-bold uppercase text-white">BUY {tokenSymbol}</span>
         </div>
       </div>
 
       {/* Amount Input */}
-      <div className="bg-black/30 border border-zinc-800 rounded-lg p-3 mb-3">
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] text-zinc-500 uppercase">You Pay</span>
           <span className="text-[10px] text-zinc-500">
@@ -305,7 +305,7 @@ export function TokenSwap({
       </div>
 
       {/* Estimated Output */}
-      <div className="bg-black/30 border border-zinc-800 rounded-lg p-3 mb-3">
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-3 mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] text-zinc-500 uppercase">You Receive</span>
           {isLoadingQuote ? (
@@ -340,7 +340,7 @@ export function TokenSwap({
         onClick={handleBuy}
         disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance}
         className={`
-          w-full py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2
+          w-full py-2.5 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2
           ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
             ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
             : 'bg-white hover:bg-zinc-100 text-black'
