@@ -1,4 +1,4 @@
-# The Council — Frontend
+# The Apostate — Frontend
 
 Real-time AI trading terminal built with Next.js 15.
 
