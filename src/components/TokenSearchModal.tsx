@@ -179,8 +179,6 @@ export function TokenSearchModal({
         body: JSON.stringify({
           tokenAddress,
           requestedBy: userAddress,
-          symbol: tokenSymbol,
-          name: tokenName,
         }),
       });
 
@@ -208,6 +206,18 @@ export function TokenSearchModal({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+  
+  const fetchTokenList = async (limit: number = 10) => {
+    const res = await fetch(`https://api.nadapp.net/order/market_cap?page=1&limit=10&direction=DESC&is_nsfw=false`);
+    const data = await res.json();
+    setRecentTokens(data.tokens || []);
+  };
+
+  useEffect(() => {
+    if (isOpen && displayTokens.length === 0) {
+      fetchTokenList(10)
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

@@ -202,6 +202,22 @@ export function TokenSwap({
       if (receipt.status === 'success') {
         setIsConfirming(false);
         setIsSuccess(true);
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trade/notify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userAddress: address,
+                    tokenAddress,
+                    tokenSymbol,
+                    amountMon: parseFloat(amount),
+                    amountTokens: parseFloat(formatEther(amountOut)),
+                    txHash: hash,
+                }),
+            });
+        } catch (e) {
+            console.error('Failed to notify trade:', e);
+        }
         onSuccess?.(hash, formatEther(amountOut));
       } else {
         throw new Error('Transaction failed');
