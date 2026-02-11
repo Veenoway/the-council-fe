@@ -26,7 +26,7 @@ export function TokenInfo({ token, isActive = true, className = '' }: TokenInfoP
     return (
       <div className={className}>
         <h3 className="font-semibold text-sm mb-3">Token Info</h3>
-        <div className="text-zinc-500 text-sm">No token selected</div>
+        <div className="text-zinc-500 text-sm">Agents are fetching a token to analyze...</div>
       </div>
     );
   }

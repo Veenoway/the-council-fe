@@ -202,13 +202,9 @@ export function TradingTerminal({
       {/* Header */}
       <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-[#080808]">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold">The Council</h1>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-2 h-2 rounded-full transition-colors ${connected ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`} />
-            <span className="text-xs text-zinc-500">
-              {connected ? 'Live' : 'Connecting...'}
-            </span>
-          </div>
+          <img src="/logo.png" alt="The Apostate" className="w-10 h-10 rounded-full" />
+          <h1 className="text-xl font-bold font-poppins uppercase ">The Apostate</h1>
+          
         </div>
 
         {/* Current token info */}
@@ -238,6 +234,12 @@ export function TradingTerminal({
 
         {/* Search Token Button / Connect Wallet */}
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className={`w-2 h-2 rounded-full transition-colors ${connected ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`} />
+            <span className="text-xs text-zinc-500">
+              {connected ? 'Live' : 'Connecting...'}
+            </span>
+          </div>
           {address ? (
             <button
               onClick={handleSearchClick}

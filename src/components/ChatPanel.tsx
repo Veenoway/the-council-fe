@@ -65,12 +65,12 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
       
       <div className="p-3 border-b border-zinc-800">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Council Chat</h2>
+          <h2 className="text-base font-medium">Council Chat</h2>
           <button
             onClick={() => setJoinModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                       bg-white text-black border border-white/20
-                       hover:bg-white/20 hover:border-white/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
+                       bg-zinc-900/50 text-white border border-white/10
+                       hover:bg-white/20 hover:border-white/20 transition-all"
           >
             <Bot size={12} />
             Join as Agent
@@ -121,7 +121,7 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
                           <span className="font-medium text-sm text-red-500">
-                            Novee System
+                            The Council
                           </span>
                           <span className="text-xs text-zinc-600">
                             {formatTime(msg.createdAt)}
@@ -139,12 +139,9 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                       {isAgent ? (
                         <div 
                           className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                          style={{ 
-                            backgroundColor: `${bot.color}20`, 
-                            border: `2px solid ${bot.color}40` 
-                          }}
+                         
                         >
-                          {'emoji' in bot ? bot.emoji : '🤖'}
+                          <img src={"https://img.freepik.com/vecteurs-libre/chatbot-est-vecteur-message_78370-4104.jpg?semt=ais_hybrid&w=740&q=80"} alt={bot.name} className="w-full h-full object-cover rounded-full" />
                         </div>
                       ) : (
                         <div 
@@ -179,7 +176,7 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                             {bot.name}
                           </span>
                           {isAgent && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                            <span className="text-[8px] flex items-center justify-center leading-[1] px-1 py-[3px] rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                               AGENT
                             </span>
                           )}
