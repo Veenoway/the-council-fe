@@ -7,8 +7,8 @@
 import { useReadContract, useWriteContract, useAccount, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 
-const PREDICTIONS_CONTRACT = '0xf6753299c76E910177696196Cd9A5efDDa6c35C0' as const;
-const COUNCIL_TOKEN_ADDRESS = '0xbD489B45f0f978667fBaf373D2cFA133244F7777' as const; // TODO: Remplacer par vraie adresse
+const PREDICTIONS_CONTRACT = '0xc73E9673BE659dDDA9335794323336ee02B02f14' as const;
+const COUNCIL_TOKEN_ADDRESS = '0xbE68317D0003187342eCBE7EECA364E4D09e7777' as const; // TODO: Remplacer par vraie adresse
 
 export { COUNCIL_TOKEN_ADDRESS };
 

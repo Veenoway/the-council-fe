@@ -100,7 +100,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
      
 
       try {
-        const res = await fetch(`https://api.nadapp.net/token/0xbD489B45f0f978667fBaf373D2cFA133244F7777`);
+        const res = await fetch(`https://api.nadapp.net/token/0xbE68317D0003187342eCBE7EECA364E4D09e7777`);
         console.log("res", res);
         if (res.ok) {
           const data = await res.json();

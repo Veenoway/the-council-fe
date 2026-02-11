@@ -11,7 +11,7 @@ import { TokenSwap } from './TokenSwap';
 import MiniSwap from './MiniSwap';
 
 // Council token address on Monad
-const COUNCIL_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_COUNCIL_TOKEN || '0xbD489B45f0f978667fBaf373D2cFA133244F7777';
+const COUNCIL_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_COUNCIL_TOKEN || '0xbE68317D0003187342eCBE7EECA364E4D09e7777';
 const COUNCIL_SYMBOL = 'COUNCIL';
 const COUNCIL_NAME = 'The Council';
 
