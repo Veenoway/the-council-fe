@@ -289,7 +289,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
           onClick={onSuccess}
           className="w-full mt-4 py-2.5 bg-white text-black rounded-lg font-bold hover:bg-zinc-100 transition-all"
         >
-          Continue to Bet
+          Close
         </button>
       </div>
     );

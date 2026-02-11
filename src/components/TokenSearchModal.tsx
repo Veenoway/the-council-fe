@@ -19,6 +19,7 @@ import {
   Sparkles,
   Zap
 } from 'lucide-react';
+import { COUNCIL_TOKEN_ADDRESS, useHoldsToken } from '@/hooks/usePredictions';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 const NADFUN_API = 'https://api.nad.fun';
@@ -69,7 +70,8 @@ export function TokenSearchModal({
   const [error, setError] = useState<string | null>(null);
   const [recentTokens, setRecentTokens] = useState<TokenResult[]>([]);
   const [requesting, setRequesting] = useState<string | null>(null);
-  
+  const { holdsToken, isLoading: isCheckingToken } = useHoldsToken(COUNCIL_TOKEN_ADDRESS);
+ 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
 
@@ -319,7 +321,7 @@ const requestAnalysis = async (token: TokenResult & { tokenData?: any }) => {
             </div>
 
             {/* Holder badge */}
-            {isHolder ? (
+            {holdsToken ? (
               <div className="mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-900 rounded-lg">
                 <Crown className="w-4 h-4 text-white" />
                 <span className="text-xs text-white">
@@ -369,7 +371,7 @@ const requestAnalysis = async (token: TokenResult & { tokenData?: any }) => {
                     key={token?.token_info?.token_id || token.address}
                     token={token}
                     onSelect={() => requestAnalysis(token)}
-                    isHolder={isHolder}
+                    isHolder={holdsToken}
                     isRequesting={requesting === (token?.token_info?.token_id || token.address)}
                   />
                 ))}
@@ -380,7 +382,7 @@ const requestAnalysis = async (token: TokenResult & { tokenData?: any }) => {
           {/* Footer */}
           <div className="p-3 border-t border-zinc-800 bg-zinc-900/50">
             <p className="text-xs text-zinc-400 text-center">
-              {isHolder ? 'Bots will react and switch to your token' : 'Powered by nad.fun'} • Press ESC to close
+              {!holdsToken ? 'Bots will react and switch to your token' : 'Powered by nad.fun'} • Press ESC to close
             </p>
           </div>
         </motion.div>

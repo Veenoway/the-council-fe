@@ -22,6 +22,7 @@ import { TokenSearchModal } from './TokenSearchModal';
 import { BuyCouncilModal } from './BuyCouncilModal';
 import { Search, Crown } from 'lucide-react';
 import TradeSidebar from './TradeSidebar';
+import { COUNCIL_TOKEN_ADDRESS, useHoldsToken } from '@/hooks/usePredictions';
 
 // ============================================================
 // BOT CONFIG
@@ -57,6 +58,7 @@ export function TradingTerminal({
   initialTrades = []
 }: TradingTerminalProps) {
   // Initialize with SSR data
+   const { holdsToken, isLoading: isCheckingToken } = useHoldsToken(COUNCIL_TOKEN_ADDRESS);
   const [currentToken, setCurrentToken] = useState<Token | null>(initialToken);
   const [previousToken, setPreviousToken] = useState<Token | null>(initialToken);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -67,7 +69,6 @@ export function TradingTerminal({
   // Modal states
   const [searchOpen, setSearchOpen] = useState(false);
   const [buyCouncilOpen, setBuyCouncilOpen] = useState(false);
-  const [isHolder, setIsHolder] = useState(false);
 
   // WebSocket connection
   const { isConnected, lastMessage } = useWebSocket(
@@ -75,41 +76,20 @@ export function TradingTerminal({
   );
 
 
-  // --------------------------------------------------------
-  // CHECK HOLDER STATUS
-  // --------------------------------------------------------
-  useEffect(() => {
-    if (address) {
-      checkHolderStatus(address);
-    } else {
-      setIsHolder(false);
-    }
-  }, [address]);
 
-  const checkHolderStatus = async (walletAddress: string) => {
-    try {
-      const res = await fetch(`${API_URL}/api/holder/check/${walletAddress}`);
-      if (res.ok) {
-        const data = await res.json();
-        setIsHolder(data.isHolder);
-      }
-    } catch (e) {
-      console.error('Failed to check holder status:', e);
-    }
-  };
 
   // Handle Search button click - different behavior based on holder status
   const handleSearchClick = () => {
     if (!address) {
       return;
     }
-    
-    if (isHolder) {
+    if (holdsToken) {
       setSearchOpen(true);
     } else {
       setBuyCouncilOpen(true);
     }
   };
+  
 
   // Handle token selection from search modal
   const handleTokenSelect = (token: any) => {
@@ -118,9 +98,7 @@ export function TradingTerminal({
 
   // Handle successful COUNCIL purchase
   const handleCouncilPurchaseSuccess = () => {
-    if (address) {
-      checkHolderStatus(address);
-    }
+    
     setBuyCouncilOpen(false);
     setTimeout(() => {
       setSearchOpen(true);
@@ -245,7 +223,7 @@ export function TradingTerminal({
               onClick={handleSearchClick}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all
-                ${isHolder 
+                ${holdsToken 
                   ? 'bg-white hover:bg-zinc-100 text-black' 
                   : 'bg-white text-black'
                 }
@@ -317,7 +295,7 @@ export function TradingTerminal({
         <div className="flex items-center gap-4">
           <span>💬 {messages.length}</span>
           <span>📈 {trades.length} trades</span>
-          {isHolder && (
+          {holdsToken && (
             <span className="flex items-center gap-1 text-yellow-500">
               <Crown size={12} />
               Council Holder
@@ -334,16 +312,19 @@ export function TradingTerminal({
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectToken={handleTokenSelect}
-        isHolder={isHolder}
+        isHolder={holdsToken}
         userAddress={address}
       />
 
+
       {/* Buy Council Modal - For non-holders */}
+      {!holdsToken ? (
       <BuyCouncilModal
         isOpen={buyCouncilOpen}
         onClose={() => setBuyCouncilOpen(false)}
         onSuccess={handleCouncilPurchaseSuccess}
       />
+      ) : null}
     </div>
   );
 }

@@ -66,7 +66,13 @@ export function BuyCouncilModal({ isOpen, onClose, onSuccess }: BuyCouncilModalP
 
               <MiniSwap
                 tokenAddress={COUNCIL_TOKEN_ADDRESS}
-                onSuccess={() => setShowSwap(false)}
+               onSuccess={() => {
+                setShowSwap(false);
+                setTimeout(() => {
+                  onSuccess?.();
+                  onClose();
+                }, 3000);
+              }}
               />
             </div>
         </motion.div>
