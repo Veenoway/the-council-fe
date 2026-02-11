@@ -379,7 +379,7 @@ const handleBuy = async () => {
       {/* Buy Button */}
    <button
   onClick={handleBuy}
-  disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || (parseFloat(amount) > maxBalance && currentChain?.id === monad.id)}
+  disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || (parseFloat(amount) > maxBalance && chainId === monad.id)}
   className={`
     w-full py-2.5 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2
     ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
@@ -391,7 +391,7 @@ const handleBuy = async () => {
   {isPending ? (
     <>
       <Loader2 className="w-4 h-4 animate-spin" />
-      {currentChain?.id !== monad.id ? 'Switch network...' : 'Confirm in wallet...'}
+      {chainId !== monad.id ? 'Switch network...' : 'Confirm in wallet...'}
     </>
   ) : isConfirming ? (
     <>
@@ -400,7 +400,7 @@ const handleBuy = async () => {
     </>
   ) : !address ? (
     'Connect wallet'
-  ) : currentChain?.id !== monad.id ? (
+  ) : chainId !== monad.id ? (
     'Switch to Monad'
   ) : parseFloat(amount) > maxBalance ? (
     'Insufficient balance'
