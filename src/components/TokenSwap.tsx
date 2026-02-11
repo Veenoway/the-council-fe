@@ -83,7 +83,7 @@ export function TokenSwap({
   onClose,
   compact = false,
 }: TokenSwapProps) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected,connector } = useAccount();
   const { data: balance } = useBalance({ address });
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
@@ -141,9 +141,32 @@ export function TokenSwap({
     return () => clearTimeout(debounce);
   }, [amount, tokenAddress, publicClient, tokenPrice]);
 
-  const handleBuy = async () => {
-    console.log("handleBuy", address, walletClient, publicClient, amount, parseFloat(amount) <= 0);
-    if (!address || !walletClient || !publicClient || !amount || parseFloat(amount) <= 0) {
+const handleBuy = async () => {
+    if (!address || !publicClient || !amount || parseFloat(amount) <= 0) {
+      return;
+    }
+
+    // Get wallet client fresh — fixes prod undefined issue
+    let wc = walletClient;
+    if (!wc && connector) {
+      try {
+        const provider = await connector.getProvider();
+        const { createWalletClient, custom } = await import('viem');
+        const { monad } = await import('viem/chains');
+        wc = createWalletClient({
+          account: address,
+          chain: monad,
+          transport: custom(provider as any),
+        });
+      } catch (e) {
+        console.error('Failed to create wallet client:', e);
+        setError('Wallet not ready — try again');
+        return;
+      }
+    }
+
+    if (!wc) {
+      setError('Wallet not connected');
       return;
     }
 
@@ -153,8 +176,6 @@ export function TokenSwap({
     try {
       const amountIn = parseEther(amount);
       
-      // 1. Get fresh quote
-      console.log('🔍 Getting quote for', tokenSymbol);
       const [router, amountOut] = await publicClient.readContract({
         address: CONFIG.LENS,
         abi: LENS_ABI,
@@ -162,13 +183,9 @@ export function TokenSwap({
         args: [tokenAddress as `0x${string}`, amountIn, true],
       });
 
-      console.log('📊 Quote:', { router, amountOut: formatEther(amountOut) });
-
-      // 2. Calculate slippage (2%)
       const amountOutMin = (amountOut * BigInt(98)) / BigInt(100);
-      const deadline = BigInt(Math.floor(Date.now() / 1000) + 300); // 5 min
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 300);
 
-      // 3. Encode buy call
       const callData = encodeFunctionData({
         abi: ROUTER_ABI,
         functionName: 'buy',
@@ -180,50 +197,42 @@ export function TokenSwap({
         }],
       });
 
-      console.log('🚀 Sending transaction...');
-      
-      // 4. Send transaction
-      const hash = await walletClient.sendTransaction({
+      const hash = await wc.sendTransaction({
         account: address,
         to: router,
         data: callData,
         value: amountIn,
       });
 
-      console.log('📝 TX Hash:', hash);
       setTxHash(hash);
       setIsPending(false);
       setIsConfirming(true);
 
-      // 5. Wait for confirmation
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      
-      console.log('✅ Confirmed:', receipt);
       
       if (receipt.status === 'success') {
         setIsConfirming(false);
         setIsSuccess(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trade/notify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userAddress: address,
-                    tokenAddress,
-                    tokenSymbol,
-                    amountMon: parseFloat(amount),
-                    amountTokens: parseFloat(formatEther(amountOut)),
-                    txHash: hash,
-                }),
-            });
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trade/notify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userAddress: address,
+              tokenAddress,
+              tokenSymbol,
+              amountMon: parseFloat(amount),
+              amountTokens: parseFloat(formatEther(amountOut)),
+              txHash: hash,
+            }),
+          });
         } catch (e) {
-            console.error('Failed to notify trade:', e);
+          console.error('Failed to notify trade:', e);
         }
         onSuccess?.(hash, formatEther(amountOut));
       } else {
         throw new Error('Transaction failed');
       }
-
     } catch (err: any) {
       console.error('❌ Buy error:', err);
       setError(err.shortMessage || err.message || 'Transaction failed');
