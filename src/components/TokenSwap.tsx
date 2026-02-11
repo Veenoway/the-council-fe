@@ -89,7 +89,7 @@ export function TokenSwap({
   const { data: balance } = useBalance({ address });
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  const { switchChainAsync } = useSwitchChain();
+  const { switchChain } = useSwitchChain();
   const [amount, setAmount] = useState('1');
   const [estimatedTokens, setEstimatedTokens] = useState<string>('0');
   const [quote, setQuote] = useState<{ router: string; amountOut: bigint } | null>(null);
@@ -145,42 +145,19 @@ export function TokenSwap({
   }, [amount, tokenAddress, publicClient, tokenPrice]);
 
 const handleBuy = async () => {
-   if (chainId !== monad.id) {
-    try {
-      setError(null);
-      setIsPending(true);
-      
+  if (chainId !== monad.id) {
       try {
-        await switchChainAsync({ chainId: monad.id });
-      } catch (switchError: any) {
-        // Chain not in wallet — add it manually
-        if (connector) {
-          const provider = await connector.getProvider() as any;
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: `0x${monad.id.toString(16)}`,
-              chainName: 'Monad',
-              nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
-              rpcUrls: ['https://rpc.monad.xyz'],
-              blockExplorerUrls: ['https://monadexplorer.com'],
-            }],
-          });
-        } else {
-          throw switchError;
-        }
+        setError(null);
+        setIsPending(true);
+        await switchChain({ chainId: monad.id });
+        // Small delay for wallet client to reinitialize after chain switch
+        await new Promise(r => setTimeout(r, 1000));
+      } catch (e: any) {
+        setError('Please switch to Monad network');
+        setIsPending(false);
+        return;
       }
-      
-      await new Promise(r => setTimeout(r, 1500));
-      setIsPending(false);
-      return; // Return so user clicks Buy again on correct chain
-    } catch (e: any) {
-      console.error('Network switch failed:', e);
-      setError('Please add Monad network manually');
-      setIsPending(false);
-      return;
     }
-  }
     if (!address || !publicClient || !amount || parseFloat(amount) <= 0) {
       return;
     }
