@@ -374,7 +374,7 @@ function BotColumn({ botId, config, portfolio, onClick, token }: BotColumnProps)
 
       {/* Holdings Preview */}
       {holdings.length > 0 ? (
-        <div className="px-3 py-2 bg-zinc-900/30">
+        <div className="px-3 py-2 bg-zinc-900/30 flex items-center justify-between">
           <p className="text-[10px] text-zinc-600 mb-1">HOLDINGS</p>
           <div className="flex items-center gap-1">
             <div className="flex items-center -space-x-2">
