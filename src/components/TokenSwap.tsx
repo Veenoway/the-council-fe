@@ -377,37 +377,37 @@ const handleBuy = async () => {
       )}
 
       {/* Buy Button */}
-      <button
-        onClick={handleBuy}
-        disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance}
-        className={`
-          w-full py-2.5 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2
-          ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
-            ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-            : 'bg-white hover:bg-zinc-100 text-black'
-          }
-        `}
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Confirm in wallet...
-          </>
-        ) : isConfirming ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Processing...
-          </>
-        ) : parseFloat(amount) > maxBalance&& address ? (
-          'Insufficient balance'
-        ) : !address ? (
-            'Connect wallet'
-        ):(
-          <>
-            Buy ${tokenSymbol}
-          </>
-        )}
-      </button>
+   <button
+  onClick={handleBuy}
+  disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || (parseFloat(amount) > maxBalance && currentChain?.id === monad.id)}
+  className={`
+    w-full py-2.5 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2
+    ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
+      ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+      : 'bg-white hover:bg-zinc-100 text-black'
+    }
+  `}
+>
+  {isPending ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin" />
+      {currentChain?.id !== monad.id ? 'Switch network...' : 'Confirm in wallet...'}
+    </>
+  ) : isConfirming ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin" />
+      Processing...
+    </>
+  ) : !address ? (
+    'Connect wallet'
+  ) : currentChain?.id !== monad.id ? (
+    'Switch to Monad'
+  ) : parseFloat(amount) > maxBalance ? (
+    'Insufficient balance'
+  ) : (
+    <>Buy ${tokenSymbol}</>
+  )}
+</button>
 
       {/* Close button */}
       {onClose && (
