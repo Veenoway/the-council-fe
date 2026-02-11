@@ -688,10 +688,10 @@ function PredictionCard({
                       }}
                       disabled={isPending || isConfirming || !betAmount || parseFloat(betAmount) < 0.1}
                       className={`
-                        px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2
+                        px-4 py-1 rounded-lg font-medium text-sm transition-all flex items-center gap-2
                         ${isPending || isConfirming || !betAmount || parseFloat(betAmount) < 0.1
-                          ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-                          : 'bg-purple-500 hover:bg-purple-600 text-white'
+                          ? 'bg-zinc-900 text-zinc-500 cursor-not-allowed'
+                          : 'bg-white hover:bg-zinc-100 text-black'
                         }
                       `}
                     >
@@ -699,7 +699,6 @@ function PredictionCard({
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <>
-                          <Zap className="w-4 h-4" />
                           Add
                         </>
                       )}
