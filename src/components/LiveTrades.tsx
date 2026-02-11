@@ -98,12 +98,56 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Transform WebSocket trades to display format
+let colorMap: Record<string, string> | null = null;
+
+function getColorMap(): Record<string, string> {
+  if (colorMap) return colorMap;
+  try {
+    const stored = localStorage.getItem('trader-colors');
+    colorMap = stored ? JSON.parse(stored) : {};
+  } catch {
+    colorMap = {};
+  }
+  return colorMap!;
+}
+
+function generateRandomColor(): string {
+  const h = Math.floor(Math.random() * 360);
+  const s = 60 + Math.floor(Math.random() * 30);
+  const l = 55 + Math.floor(Math.random() * 20);
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+ function getTraderColor(botId: string, fallbackColor?: string): string {
+  if (typeof window === 'undefined') return fallbackColor || '#888';
+  
+  const map = getColorMap();
+  
+  if (map[botId]) return map[botId];
+  
+  // Ignore default agent color — treat as no color
+  const DEFAULT_AGENT_COLOR = '#9333ea';
+  const hasCustomColor = fallbackColor && fallbackColor !== '#666' && fallbackColor !== DEFAULT_AGENT_COLOR;
+  
+  if (hasCustomColor) {
+    map[botId] = fallbackColor;
+  } else {
+    map[botId] = generateRandomColor();
+  }
+  
+  try {
+    localStorage.setItem('trader-colors', JSON.stringify(map));
+  } catch {}
+  
+  return map[botId];
+}
+ 
+console.log('wsTradeswsTrades', wsTrades);
   const wsDisplayTrades: DisplayTrade[] = wsTrades.map((t: any) => ({
     id: t.id || t.txHash || `ws-${Date.now()}`,
     botId: t.botId,
-    botName:  t.botId?.includes('agent_') ? t.agentName : BOT_CONFIG[t.botId]?.name || t.botId,
-    botColor: BOT_CONFIG[t.botId]?.color || '#666',
+    botName: t.botId?.includes('agent_') ? t.agentName : BOT_CONFIG[t.botId]?.name || t.botName || t.botId,
+    botColor: BOT_CONFIG[t.botId]?.color || getTraderColor(t.botId?.includes('agent_') ? t.agentName : BOT_CONFIG[t.botId]?.name || t.botName || t.botId ),
     botEmoji: BOT_CONFIG[t.botId]?.emoji || '🤖',
     tokenAddress: t.tokenAddress,
     tokenSymbol: t.tokenSymbol,
@@ -145,11 +189,27 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
 
       {/* Content */}
       <div className="max-h-[64vh] overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-zinc-400 animate-spin" />
+      {loading ? (
+        <div className="animate-pulse">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2 border-b border-zinc-800/50">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3.5 w-16 bg-zinc-800 rounded" />
+                    <div className="h-3 w-8 bg-zinc-800/60 rounded" />
+                    <div className="h-3.5 w-14 bg-zinc-800 rounded" />
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="h-2.5 w-12 bg-zinc-800/40 rounded" />
+                    <div className="h-2.5 w-1 bg-zinc-800/30 rounded-full" />
+                    <div className="h-2.5 w-10 bg-zinc-800/40 rounded" />
+                  </div>
+                </div>
+                <div className="h-3.5 w-3.5 bg-zinc-800/30 rounded" />
+              </div>
+            ))}
           </div>
-        ) :uniqueTrades.length === 0 ? (
+        ) : uniqueTrades.length === 0  ? (
           <div className="p-8 text-center text-zinc-500">
             <p>No trades yet</p>
             <p className="text-sm mt-1">Waiting for Council to make moves...</p>
@@ -157,7 +217,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
         ) : (
           <AnimatePresence mode="popLayout">
             {uniqueTrades.map((trade, index) => (
-              <TradeRow key={trade.id} trade={trade} isNew={index < wsTrades.length} />
+              <TradeRow key={trade.id} trade={trade} isNew={index < wsTrades.length} isFirst={index < 3}/>
             ))}
           </AnimatePresence>
         )}
@@ -166,7 +226,7 @@ export function LiveTrades({ wsTrades = [] }: LiveTradesProps) {
   );
 }
 
-function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
+function TradeRow({ trade, isNew, isFirst }: { trade: DisplayTrade; isNew: boolean; isFirst: boolean }) {
   const isProfitable = trade.pnl > 0;
   const isBuy = trade.side === 'buy';
 
@@ -174,14 +234,27 @@ function TradeRow({ trade, isNew }: { trade: DisplayTrade; isNew: boolean }) {
   console.log("trade =====>", trade);
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+    initial={{ 
+        opacity: 0, 
+        y: 0, 
+        scale: 1,
+        backgroundColor: isNew && isFirst ? "rgba(34, 197, 94, 0.4)" : "rgba(34, 197, 94, 0)" 
+      }}
+      // L'animation finale : le bg-color redevient transparent après l'apparition
+      animate={{ 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        backgroundColor: "rgba(34, 197, 94, 0)" 
+      }}
       exit={{ opacity: 0, x: -100 }}
-      transition={{ duration: 0.3 }}
+      transition={{ 
+        duration: 0.4, // Durée de l'apparition (mouvement)
+        backgroundColor: { duration: 3.5, ease: "easeOut" } // Durée du flash vert
+      }}
       className={`
         flex items-center gap-3 px-3 py-2 border-b border-zinc-800/50
         hover:bg-zinc-800/30 transition-colors cursor-pointer
-      
       `}
     >
     

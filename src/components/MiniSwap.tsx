@@ -222,6 +222,28 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
       if (receipt.status === 'success') {
         setIsConfirming(false);
         setIsSuccess(true);
+         try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trade/notify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userAddress: address,
+                    tokenAddress,
+                    tokenSymbol: tokenInfo?.symbol || 'TOKEN',
+                    amountMon: parseFloat(amount),
+                    amountTokens: parseFloat(formatEther(amountOut)),
+                    txHash: hash,
+                }),
+            });
+
+            if (res.ok) {
+                console.log('Trade notified successfully');
+            } else {
+                console.error('Failed to notify trade');
+            }
+        } catch (e) {
+            console.error('Failed to notify trade:', e);
+        }
       } else {
         throw new Error('Transaction failed');
       }
@@ -282,7 +304,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-zinc-500">You pay</span>
           <span className="text-xs text-zinc-500">
-            Balance: {maxBalance.toFixed(4)} MON
+            Balance: {maxBalance.toFixed(0)} MON
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -298,12 +320,12 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
          
         </div>
         {/* Quick amounts */}
-        <div className="flex gap-2 mt-2">
+        <div className="flex gap-1.5 mt-2">
           {[1, 5, 10].map((val) => (
             <button
               key={val}
               onClick={() => setAmount(val.toString())}
-              className={`px-3 py-1 rounded text-xs transition-all ${
+              className={`w-1/4 py-1 rounded text-[10px] transition-all ${
                 amount === val.toString()
                   ? 'bg-white text-black'
                   : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
@@ -314,7 +336,7 @@ export function MiniSwap({ tokenAddress, onSuccess, onCancel }: MiniSwapProps) {
           ))}
           <button
             onClick={() => setAmount((maxBalance * 0.5).toFixed(2))}
-            className="px-3 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
+            className="px-3 w-1/4 py-1.5 rounded text-[10px] bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition-all"
           >
             50%
           </button>

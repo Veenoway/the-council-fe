@@ -251,7 +251,7 @@ function PredictionCard({
         </div>
 
         {/* Token Gate Content */}
-        <div className="border-t border-zinc-800 p-6">
+        <div className="border-t border-zinc-800 p-3">
           {/* Show MiniSwap directly */}
           <div className="max-w-sm mx-auto">
             <div className="text-center mb-6">

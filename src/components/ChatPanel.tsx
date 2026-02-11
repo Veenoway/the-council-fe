@@ -1,12 +1,14 @@
 'use client';
 
 // ============================================================
-// CHAT PANEL — Displays bot conversation
+// CHAT PANEL — Displays bot + agent conversation
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
 import { Message, BotId } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Bot, Users } from 'lucide-react';
+import { JoinAgentModal } from '@/components/JoinAgentModal';
 
 interface ChatPanelProps {
   messages: Message[];
@@ -16,7 +18,8 @@ interface ChatPanelProps {
 
 export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const initialCountRef = useRef(messages.length);
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current && messages.length > 0) {
@@ -32,21 +35,49 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const getBotInfo = (botId: string) => {
+  const getBotInfo = (botId: string, msg?: any) => {
     if (botId === 'system') {
-      return { name: 'System', imgURL: '/bots/system.png', color: '#888' };
+      return { name: 'System', imgURL: '/bots/system.png', color: '#888', isAgent: false };
     }
     if (botId.startsWith('human_')) {
-      return { name: 'Anon', imgURL: '/bots/anon.jpg', color: '#666' };
+      console.log('msg', msg);
+      const addy = msg?.botId?.slice(6).slice(0, 6) + '...' + msg?.botId?.slice(6).slice(-4);
+      return { name: addy, imgURL: '/danny.jpeg', color: '#06b6d4', isAgent: false };
     }
-    return botConfig[botId as BotId] || { name: botId, imgURL: '/bots/anon.jpg', color: '#666' };
+    if (botId.startsWith('agent_')) {
+      return {
+        name: msg?.agentName || 'Agent',
+        imgURL: null, // Agents use emoji avatar, not image
+        color: msg?.agentColor || '#06b6d4',
+        emoji: msg?.agentAvatar || '🤖',
+        isAgent: true,
+      };
+    }
+    const config = botConfig[botId as BotId];
+    if (config) {
+      return { ...config, isAgent: false };
+    }
+    return { name: botId, imgURL: 'https://i.pinimg.com/474x/db/79/b8/db79b8364fefc81d6519737ee17941c2.jpg', color: 'yellow', isAgent: false };
   };
-
-  console.log("messages =====>", messages);
 
   return (
     <div className={`bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full ${className}`}>
-     
+      
+      <div className="p-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Council Chat</h2>
+          <button
+            onClick={() => setJoinModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                       bg-white text-black border border-white/20
+                       hover:bg-white/20 hover:border-white/30 transition-all"
+          >
+            <Bot size={12} />
+            Join as Agent
+          </button>
+        </div>
+      
+      </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -57,23 +88,23 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            {messages.map((msg) => {
-              const bot = getBotInfo(msg.botId);
+            {messages.map((msg, index) => {
+              const bot = getBotInfo(msg.botId, msg);
               const isSystem = msg.botId === 'system' || msg.messageType === 'system';
-              
+              const isAgent = 'isAgent' in bot && bot.isAgent;
+              const isInitial = index < initialCountRef.current;
               return (
                 <motion.div 
                   key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
+                    initial={isInitial ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className={`flex gap-2 group ${isSystem ? 'justify-center' : ''}`}
                 >
                   {isSystem ? (
                     <>
-                   
-                       <div 
+                      <div 
                         className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
                         style={{ backgroundColor: `red`, border: `2px solid red` }}
                       >
@@ -89,9 +120,7 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
-                          <span 
-                            className="font-medium text-sm text-red-500"
-                          >
+                          <span className="font-medium text-sm text-red-500">
                             Novee System
                           </span>
                           <span className="text-xs text-zinc-600">
@@ -102,23 +131,43 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                         <p className="text-sm mt-0.5 break-words text-zinc-300 leading-relaxed">
                           {msg.content}
                         </p>
-                      </div> </>
+                      </div>
+                    </>
                   ) : (
                     <>
-                      {/* Avatar */}
-                      <div 
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
-                        style={{ backgroundColor: `${bot.color}20`, border: `2px solid ${bot.color}40` }}
-                      >
-                        <img 
-                          src={bot.imgURL} 
-                          alt={bot.name} 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
+                      {/* Avatar — different for agents vs bots */}
+                      {isAgent ? (
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
+                          style={{ 
+                            backgroundColor: `${bot.color}20`, 
+                            border: `2px solid ${bot.color}40` 
                           }}
-                        />
-                      </div>
+                        >
+                          {'emoji' in bot ? bot.emoji : '🤖'}
+                        </div>
+                      ) : (
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden"
+                          style={{ 
+                            backgroundColor: `${bot.color}20`, 
+                            border: `2px solid ${bot.color}40` 
+                          }}
+                        >
+                          {'imgURL' in bot && bot.imgURL ? (
+                            <img 
+                              src={bot.imgURL} 
+                              alt={bot.name} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            '🤖'
+                          )}
+                        </div>
+                      )}
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
@@ -129,6 +178,11 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
                           >
                             {bot.name}
                           </span>
+                          {isAgent && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                              AGENT
+                            </span>
+                          )}
                           <span className="text-xs text-zinc-600">
                             {formatTime(msg.createdAt)}
                           </span>
@@ -160,6 +214,12 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
           </div>
         </div>
       )}
+
+      {/* Join Agent Modal */}
+      <JoinAgentModal 
+        isOpen={joinModalOpen} 
+        onClose={() => setJoinModalOpen(false)} 
+      />
     </div>
   );
 }

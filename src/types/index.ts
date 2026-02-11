@@ -24,6 +24,10 @@ export interface Message {
   token?: string;
   messageType: 'chat' | 'trade' | 'system';
   createdAt: Date | string;
+   agentName?: string;     // Display name of the agent
+  agentAvatar?: string;   // Emoji avatar (e.g. '🤖')
+  agentColor?: string;    // Hex color for the agent
+  txHash?: string;        // For trade messages
 }
 
 export interface Trade {
