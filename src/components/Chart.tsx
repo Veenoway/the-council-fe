@@ -240,7 +240,7 @@ export function Chart({ token, className = '' }: ChartProps) {
         <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center z-10 w-full h-full">
             <div className="animate-spin w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full mx-auto mb-2" />
             <div className="text-zinc-500 text-sm">
-                Initializing chart...
+                Fetching a new token to analyze...
             </div>
         </div>
       )}
@@ -250,7 +250,7 @@ export function Chart({ token, className = '' }: ChartProps) {
       {isChartReady && !token && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
           <div className="text-center">
-            <div className="text-zinc-400">Waiting for next token...</div>
+            <div className="text-zinc-400">Waiting for a new token to analyze...</div>
           </div>
         </div>
       )}

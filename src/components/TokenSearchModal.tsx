@@ -107,96 +107,149 @@ export function TokenSearchModal({
     };
   }, [query]);
 
-  const fetchRecentTokens = async () => {
-    setLoading(true);
-    try {
-      // Fetch from nad.fun API - recent tokens
-      const res = await fetch(`${NADFUN_API}/tokens?sort=created&limit=10`);
+  // Transform raw nadfun API response into Token-compatible data
+function transformNadfunToken(raw: any): TokenResult & { tokenData: any } {
+  const t = raw.token_info || raw;
+  const m = raw.market_info || {};
+
+  const address = t.token_id || t.address || raw.address || '';
+  const symbol = t.symbol || raw.symbol || 'UNKNOWN';
+  const name = t.name || raw.name || 'Unknown';
+  const imageUrl = t.image_uri || '';
+
+  const priceUsd = parseFloat(m.price_usd || m.token_price || '0');
+  const totalSupply = parseFloat(m.total_supply || '0') / 1e18;
+  const mcap = priceUsd * totalSupply;
+
+  const reserveNative = parseFloat(m.reserve_native || '0') / 1e18;
+  const nativePrice = parseFloat(m.native_price || '0');
+  const liquidity = reserveNative * nativePrice * 2;
+
+  const holders = parseInt(m.holder_count) || 0;
+  const createdAt = t.created_at
+    ? new Date(t.created_at * 1000).toISOString()
+    : new Date().toISOString();
+  const deployer = t.creator?.account_id || '';
+
+  return {
+    // Display fields
+    address,
+    symbol,
+    name,
+    price: priceUsd,
+    mcap,
+    liquidity,
+    holders,
+    imageUrl,
+    createdAt,
+    // Keep raw for UI rendering
+    token_info: raw.token_info,
+    market_info: raw.market_info,
+    // Pre-computed tokenData for backend (same shape as Token type)
+    tokenData: {
+      address,
+      symbol,
+      name,
+      price: priceUsd,
+      mcap,
+      liquidity,
+      holders,
+      deployer,
+      createdAt: new Date(createdAt),
+      priceChange24h: raw.percent || 0,
+      imageUrl,
+    },
+  };
+}
+
+const fetchTokenList = async (limit: number = 10) => {
+  const res = await fetch(
+    `https://api.nadapp.net/order/market_cap?page=1&limit=${limit}&direction=DESC&is_nsfw=false`
+  );
+  const data = await res.json();
+  setRecentTokens((data.tokens || []).map(transformNadfunToken));
+};
+
+const fetchRecentTokens = async () => {
+  setLoading(true);
+  try {
+    const res = await fetch(`${NADFUN_API}/tokens?sort=created&limit=10`);
+    if (res.ok) {
+      const data = await res.json();
+      setRecentTokens((data.tokens || []).map(transformNadfunToken));
+    }
+  } catch (e) {
+    console.error('Failed to fetch recent tokens:', e);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const searchTokens = async (searchQuery: string) => {
+  setSearching(true);
+  setError(null);
+  try {
+    if (searchQuery.startsWith('0x') && searchQuery.length === 42) {
+      const res = await fetch(`${NADFUN_API}/token/${searchQuery}`);
+      if (res.ok) {
+        const token = await res.json();
+        setResults([transformNadfunToken(token)]);
+      } else {
+        setResults([]);
+        setError('Token not found');
+      }
+    } else {
+      const res = await fetch(`${NADFUN_API}/search/${searchQuery}`);
       if (res.ok) {
         const data = await res.json();
-        setRecentTokens(data.tokens || []);
-      }
-    } catch (e) {
-      console.error('Failed to fetch recent tokens:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const searchTokens = async (searchQuery: string) => {
-    setSearching(true);
-    setError(null);
-    
-    try {
-      // Check if it's an address
-      if (searchQuery.startsWith('0x') && searchQuery.length === 42) {
-        // Fetch specific token
-        const res = await fetch(`${NADFUN_API}/token/${searchQuery}`);
-        if (res.ok) {
-          const token = await res.json();
-          setResults([token]);
-        } else {
-          setResults([]);
-          setError('Token not found');
-        }
+        setResults(
+          (data?.token_result?.tokens || []).map(transformNadfunToken)
+        );
       } else {
-        // Search by symbol/name
-        const res = await fetch(`${NADFUN_API}/search/${searchQuery}`);
-        if (res.ok) {
-          const data = await res.json();
-          console.log("data", data);
-          setResults(data?.token_result?.tokens || []);
-        } else {
-          setResults([]);
-        }
+        setResults([]);
       }
-    } catch (e) {
-      console.error('Search failed:', e);
-      setError('Search failed');
-      setResults([]);
-    } finally {
-      setSearching(false);
     }
-  };
+  } catch (e) {
+    console.error('Search failed:', e);
+    setError('Search failed');
+    setResults([]);
+  } finally {
+    setSearching(false);
+  }
+};
 
-  const requestAnalysis = async (token: TokenResult) => {
-    if (!isHolder) {
-      setError('You need to hold $COUNCIL token to request analysis');
-      return;
-    }
+const requestAnalysis = async (token: TokenResult & { tokenData?: any }) => {
+  if (!isHolder) {
+    setError('You need to hold $COUNCIL token to request analysis');
+    return;
+  }
 
-    const tokenAddress = token?.token_info?.token_id || token.address;
-    const tokenSymbol = token?.token_info?.symbol || token.symbol;
-    const tokenName = token?.token_info?.name || token.name;
-    
-    setRequesting(tokenAddress);
-    setError(null);
+  const tokenAddress = token.address;
+  setRequesting(tokenAddress);
+  setError(null);
 
-    try {
-      const res = await fetch(`${API_URL}/api/analyze/request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tokenAddress,
-          requestedBy: userAddress,
-        }),
-      });
+  try {
+    const res = await fetch(`${API_URL}/api/analyze/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tokenAddress,
+        requestedBy: userAddress,
+        tokenData: token.tokenData, // Already computed by transformNadfunToken
+      }),
+    });
 
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to request analysis');
-      }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to request analysis');
 
-      // Success - close modal and notify parent
-      onSelectToken({...token, address: tokenAddress});
-      onClose();
-    } catch (e: any) {
-      setError(e.message || 'Failed to request analysis');
-    } finally {
-      setRequesting(null);
-    }
-  };
+    onSelectToken({ ...token, address: tokenAddress });
+    onClose();
+  } catch (e: any) {
+    setError(e.message || 'Failed to request analysis');
+  } finally {
+    setRequesting(null);
+  }
+};
 
   // Close on escape
   useEffect(() => {
@@ -206,12 +259,8 @@ export function TokenSearchModal({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
   
-  const fetchTokenList = async (limit: number = 10) => {
-    const res = await fetch(`https://api.nadapp.net/order/market_cap?page=1&limit=10&direction=DESC&is_nsfw=false`);
-    const data = await res.json();
-    setRecentTokens(data.tokens || []);
-  };
 
   useEffect(() => {
     if (isOpen && displayTokens.length === 0) {
