@@ -407,7 +407,7 @@ setInterval(async () => {
 
                   {/* Full docs link */}
                   <a
-                    href="https://github.com/thecouncil/agent-docs"
+                    href="https://github.com/Veenoway/the-council/blob/master/README.md"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full mt-4 px-4 py-3 rounded-lg
