@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useBalance, usePublicClient, useWalletClient } from 'wagmi';
+import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWalletClient } from 'wagmi';
 import { parseEther, formatEther, encodeFunctionData } from 'viem';
 import { 
   Loader2, 
@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
+import { monad } from 'viem/chains';
 
 // Mainnet addresses
 const CONFIG = {
@@ -84,10 +85,11 @@ export function TokenSwap({
   compact = false,
 }: TokenSwapProps) {
   const { address, isConnected,connector } = useAccount();
+  const chainId = useChainId();
   const { data: balance } = useBalance({ address });
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  
+  const { switchChainAsync } = useSwitchChain();
   const [amount, setAmount] = useState('1');
   const [estimatedTokens, setEstimatedTokens] = useState<string>('0');
   const [quote, setQuote] = useState<{ router: string; amountOut: bigint } | null>(null);
@@ -142,6 +144,19 @@ export function TokenSwap({
   }, [amount, tokenAddress, publicClient, tokenPrice]);
 
 const handleBuy = async () => {
+  if (chainId !== monad.id) {
+      try {
+        setError(null);
+        setIsPending(true);
+        await switchChainAsync({ chainId: monad.id });
+        // Small delay for wallet client to reinitialize after chain switch
+        await new Promise(r => setTimeout(r, 1000));
+      } catch (e: any) {
+        setError('Please switch to Monad network');
+        setIsPending(false);
+        return;
+      }
+    }
     if (!address || !publicClient || !amount || parseFloat(amount) <= 0) {
       return;
     }
