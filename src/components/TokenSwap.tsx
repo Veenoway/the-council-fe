@@ -101,6 +101,7 @@ export function TokenSwap({
   const [isSuccess, setIsSuccess] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
 
   // Get quote when amount changes
   useEffect(() => {
@@ -144,19 +145,42 @@ export function TokenSwap({
   }, [amount, tokenAddress, publicClient, tokenPrice]);
 
 const handleBuy = async () => {
-  if (chainId !== monad.id) {
+   if (chainId !== monad.id) {
+    try {
+      setError(null);
+      setIsPending(true);
+      
       try {
-        setError(null);
-        setIsPending(true);
         await switchChainAsync({ chainId: monad.id });
-        // Small delay for wallet client to reinitialize after chain switch
-        await new Promise(r => setTimeout(r, 1000));
-      } catch (e: any) {
-        setError('Please switch to Monad network');
-        setIsPending(false);
-        return;
+      } catch (switchError: any) {
+        // Chain not in wallet — add it manually
+        if (connector) {
+          const provider = await connector.getProvider() as any;
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: `0x${monad.id.toString(16)}`,
+              chainName: 'Monad',
+              nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 },
+              rpcUrls: ['https://rpc.monad.xyz'],
+              blockExplorerUrls: ['https://monadexplorer.com'],
+            }],
+          });
+        } else {
+          throw switchError;
+        }
       }
+      
+      await new Promise(r => setTimeout(r, 1500));
+      setIsPending(false);
+      return; // Return so user clicks Buy again on correct chain
+    } catch (e: any) {
+      console.error('Network switch failed:', e);
+      setError('Please add Monad network manually');
+      setIsPending(false);
+      return;
     }
+  }
     if (!address || !publicClient || !amount || parseFloat(amount) <= 0) {
       return;
     }
@@ -368,7 +392,7 @@ const handleBuy = async () => {
 
       {/* Error */}
       {error && (
-        <div className="p-2 mb-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+        <div className=" mb-3 rounded-lg">
           <p className="text-xs text-red-400 flex items-center gap-2">
             <AlertCircle className="w-3 h-3 flex-shrink-0" />
             {error}
