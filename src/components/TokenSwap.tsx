@@ -142,6 +142,7 @@ export function TokenSwap({
   }, [amount, tokenAddress, publicClient, tokenPrice]);
 
   const handleBuy = async () => {
+    console.log("handleBuy", address, walletClient, publicClient, amount, parseFloat(amount) <= 0);
     if (!address || !walletClient || !publicClient || !amount || parseFloat(amount) <= 0) {
       return;
     }
