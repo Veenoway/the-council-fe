@@ -52,6 +52,10 @@ export function ChatPanel({ messages, botConfig, className = '' }: ChatPanelProp
         emoji: msg?.agentAvatar || '🤖',
         isAgent: true,
       };
+    } 
+    if (botId.startsWith('tg_')) {
+      const tgUsername = botId.slice(3);
+      return { name: `@${tgUsername}`, imgURL: '/tg.png', color: '#29a9eb', isAgent: false };
     }
     const config = botConfig[botId as BotId];
     if (config) {
