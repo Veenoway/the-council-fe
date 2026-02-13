@@ -162,7 +162,8 @@ export function ConnectWalletButton() {
               </p>
               {connectors
                 ?.filter(
-                  (connector) => connector?.rkDetails?.id !== "walletConnect",
+                  (connector) =>
+                    (connector as any)?.rkDetails?.id !== "walletConnect",
                 )
                 .map((connector) => (
                   <button
