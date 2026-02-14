@@ -20,7 +20,7 @@ import { LiveTrades } from "./LiveTrades";
 import RightSidebar from "./RightBar";
 import { TokenSearchModal } from "./TokenSearchModal";
 import { BuyCouncilModal } from "./BuyCouncilModal";
-import { Search, Crown, TwitterIcon, X, Twitter } from "lucide-react";
+import { Search, Crown, TwitterIcon, X, Twitter, Shield } from "lucide-react";
 import TradeSidebar from "./TradeSidebar";
 import { COUNCIL_TOKEN_ADDRESS, useHoldsToken } from "@/hooks/usePredictions";
 import Link from "next/link";
@@ -224,6 +224,12 @@ export function TradingTerminal({
               >
                 <FaXTwitter size={14} />
                 Twitter
+              </Link>
+            </li>
+            <li className="text-sm flex items-center gap-1">
+              <Link href="/dao" className="flex items-center gap-1">
+                <Shield size={14} />
+                DAO
               </Link>
             </li>
           </ul>
