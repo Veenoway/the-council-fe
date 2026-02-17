@@ -276,9 +276,9 @@ export function DaoClient() {
                     Your Power
                   </p>
                   <p className="text-2xl font-bold text-zinc-700 mt-1">—</p>
-                  <p className="hidden text-[11px] text-zinc-600 mt-1">
+                  {/* <p className="hidden text-[11px] text-zinc-600 mt-1">
                     Connect wallet
-                  </p>
+                  </p> */}
                 </>
               )}
             </div>
@@ -896,11 +896,11 @@ function ProposalCard({
               );
             })}
 
-            {isActive && !address && (
+            {/* {isActive && !address && (
               <p className="hidden text-xs text-zinc-600 text-center pt-2">
                 Connect wallet to vote
               </p>
-            )}
+            )} */}
             {isActive && address && !canVote && (
               <p className="text-xs text-zinc-600 text-center pt-2">
                 Hold $COUNCIL to vote ·{" "}

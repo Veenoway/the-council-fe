@@ -65,18 +65,18 @@ export function Header() {
                   })}
                 >
                   {(() => {
-                    if (!connected) {
-                      return (
-                        <button
-                          onClick={openConnectModal}
-                          className="hidden px-4 py-2 bg-accent-green text-black font-bold rounded-lg hover:bg-accent-green/80 transition-colors"
-                        >
-                          Connect Wallet
-                        </button>
-                      );
-                    }
+                    // if (!connected) {
+                    //   return (
+                    //     <button
+                    //       onClick={openConnectModal}
+                    //       className="hidden px-4 py-2 bg-accent-green text-black font-bold rounded-lg hover:bg-accent-green/80 transition-colors"
+                    //     >
+                    //       Connect Wallet
+                    //     </button>
+                    //   );
+                    // }
 
-                    if (chain.unsupported) {
+                    if (chain?.unsupported) {
                       return (
                         <button
                           onClick={openChainModal}
@@ -93,14 +93,14 @@ export function Header() {
                           onClick={openChainModal}
                           className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary rounded-lg hover:bg-bg-primary transition-colors"
                         >
-                          {chain.hasIcon && chain.iconUrl && (
+                          {chain?.hasIcon && chain.iconUrl && (
                             <img
                               src={chain.iconUrl}
                               alt={chain.name ?? 'Chain'}
                               className="w-5 h-5 rounded-full"
                             />
                           )}
-                          <span className="text-sm text-white">{chain.name}</span>
+                          <span className="text-sm text-white">{chain?.name}</span>
                         </button>
 
                         <button
@@ -108,9 +108,9 @@ export function Header() {
                           className="px-4 py-2 bg-bg-tertiary rounded-lg hover:bg-bg-primary transition-colors"
                         >
                           <span className="text-sm font-poppins text-white">
-                            {account.displayName}
+                            {account?.displayName}
                           </span>
-                          {account.displayBalance && (
+                          {account?.displayBalance && (
                             <span className="text-sm text-gray-400 ml-2">
                               {account.displayBalance}
                             </span>

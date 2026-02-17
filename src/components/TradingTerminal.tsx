@@ -4,28 +4,26 @@
 // TRADING TERMINAL — Main layout with SSR support
 // ============================================================
 
-import { useEffect, useState, useCallback } from "react";
-import { Token, Message, Trade, BotId, Verdict } from "@/types";
-import { useWebSocket } from "@/hooks/useWebSocket";
-import Chart from "./Chart";
-import ChatPanel from "./ChatPanel";
-import TokenInfo from "./TokenInfo";
-import TradePanel from "./TradePanel";
-import BotPositions from "./BotPositions";
-import Predictions from "./Predictions";
-import { ConnectWalletButton } from "./ConnectWalletButton";
-import { useAccount } from "wagmi";
-import { TokenHistory } from "./TokenHistory";
-import { LiveTrades } from "./LiveTrades";
-import RightSidebar from "./RightBar";
-import { TokenSearchModal } from "./TokenSearchModal";
-import { BuyCouncilModal } from "./BuyCouncilModal";
-import { Search, Crown, TwitterIcon, X, Twitter, Shield } from "lucide-react";
-import TradeSidebar from "./TradeSidebar";
 import { COUNCIL_TOKEN_ADDRESS, useHoldsToken } from "@/hooks/usePredictions";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { BotId, Message, Token, Trade } from "@/types";
+import { Crown, Search, Shield } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { FaXTwitter } from "react-icons/fa6";
 import { LiaTelegram } from "react-icons/lia";
+import { useAccount } from "wagmi";
+import BotPositions from "./BotPositions";
+import { BuyCouncilModal } from "./BuyCouncilModal";
+import Chart from "./Chart";
+import ChatPanel from "./ChatPanel";
+import { ConnectWalletButton } from "./ConnectWalletButton";
+import { LiveTrades } from "./LiveTrades";
+import Predictions from "./Predictions";
+import RightSidebar from "./RightBar";
+import TokenInfo from "./TokenInfo";
+import { TokenSearchModal } from "./TokenSearchModal";
+import TradeSidebar from "./TradeSidebar";
 
 // ============================================================
 // BOT CONFIG

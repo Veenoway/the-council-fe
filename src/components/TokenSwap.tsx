@@ -376,7 +376,7 @@ const handleBuy = async () => {
       )}
 
       {/* Buy Button */}
-   <button
+   {/* <button
   onClick={handleBuy}
   disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || (parseFloat(amount) > maxBalance && chainId === monad.id)}
   className={`
@@ -406,7 +406,7 @@ const handleBuy = async () => {
   ) : (
     <>Buy ${tokenSymbol}</>
   )}
-</button>
+</button> */}
 
       {/* Close button */}
       {onClose && (
