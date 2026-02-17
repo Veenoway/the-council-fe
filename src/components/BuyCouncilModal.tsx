@@ -69,8 +69,9 @@ export function BuyCouncilModal({ isOpen, onClose, onSuccess }: BuyCouncilModalP
                onSuccess={() => {
                 setShowSwap(false);
                 setTimeout(() => {
+                onClose();
                   onSuccess?.();
-                  onClose();
+                 
                 }, 3000);
               }}
               />
