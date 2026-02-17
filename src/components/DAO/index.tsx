@@ -1,24 +1,24 @@
 // src/components/DAO.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import {
+  useAvailablePool,
+  useClaimable,
+  useClaimReward,
+  useCouncilBalance,
+  useCreateProposal,
+  useFinalize,
+  useFundPool,
+  useMyVote,
+  useProposal,
+  useProposalCount,
+  useTotalRewards,
+  useVote,
+} from "@/hooks/useDAO";
+import { ChevronDown, ChevronUp, Info, Shield } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAccount } from "wagmi";
-import { ChevronDown, ChevronUp, Shield, Info } from "lucide-react";
-import {
-  useProposalCount,
-  useProposal,
-  useMyVote,
-  useClaimable,
-  useCouncilBalance,
-  useVote,
-  useClaimReward,
-  useCreateProposal,
-  useFundPool,
-  useFinalize,
-  useAvailablePool,
-  useTotalRewards,
-} from "@/hooks/useDAO";
 
 const ADMIN_WALLETS = (process.env.NEXT_PUBLIC_DAO_ADMIN_WALLETS || "")
   .toLowerCase()
@@ -276,7 +276,7 @@ export function DaoClient() {
                     Your Power
                   </p>
                   <p className="text-2xl font-bold text-zinc-700 mt-1">—</p>
-                  <p className="text-[11px] text-zinc-600 mt-1">
+                  <p className="hidden text-[11px] text-zinc-600 mt-1">
                     Connect wallet
                   </p>
                 </>
@@ -897,7 +897,7 @@ function ProposalCard({
             })}
 
             {isActive && !address && (
-              <p className="text-xs text-zinc-600 text-center pt-2">
+              <p className="hidden text-xs text-zinc-600 text-center pt-2">
                 Connect wallet to vote
               </p>
             )}

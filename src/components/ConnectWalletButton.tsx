@@ -4,16 +4,16 @@
 
 "use client";
 
-import { useAccount, useConnect, useDisconnect, useBalance } from "wagmi";
-import { useState } from "react";
 import {
-  Wallet,
-  ChevronDown,
-  LogOut,
-  Copy,
   Check,
+  ChevronDown,
+  Copy,
   ExternalLink,
+  LogOut,
+  Wallet,
 } from "lucide-react";
+import { useState } from "react";
+import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
 import WalletIcon from "./WalletIcons";
 
 export function ConnectWalletButton() {
@@ -134,7 +134,7 @@ export function ConnectWalletButton() {
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isPending}
-        className="flex items-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-lg text-xs px-4 py-2 font-medium transition-all disabled:opacity-50"
+        className="hidden items-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-lg text-xs px-4 py-2 font-medium transition-all disabled:opacity-50"
       >
         {isPending ? (
           <>

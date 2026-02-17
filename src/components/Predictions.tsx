@@ -4,32 +4,26 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
-import { BotId } from '@/types';
-import { 
-  Clock, 
-  Users, 
-  Coins,
-  ChevronDown,
-  ChevronUp,
-  Target,
-  Zap,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-  ExternalLink,
-  Lock,
-} from 'lucide-react';
-import { 
-  usePredictions, 
-  usePlaceBet, 
-  useUserBet,
+import {
   useClaimWinnings,
   useHoldsToken,
-  type PredictionData 
+  usePlaceBet,
+  usePredictions,
+  useUserBet,
+  type PredictionData
 } from '@/hooks/usePredictions';
-import { ConnectWalletButton } from './ConnectWalletButton';
+import { BotId } from '@/types';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Coins,
+  Loader2,
+  Target,
+  Users
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAccount } from 'wagmi';
 import { MiniSwap } from './MiniSwap';
 
 interface PredictionsProps {
@@ -427,7 +421,7 @@ function PredictionCard({
           {selectedOption && !isEnded && !userBet && (
             <div className="p-4 border-t border-zinc-800">
               {!isConnected ? (
-                <div className="text-center py-4 flex flex-col items-center justify-center">
+                <div className="hidden text-center py-4 flex-col items-center justify-center">
                   <p className="text-zinc-500 mb-3">Connect wallet to place bet</p>
                 </div>
               ) : (
