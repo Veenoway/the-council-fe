@@ -4,18 +4,16 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWalletClient } from 'wagmi';
-import { parseEther, formatEther, encodeFunctionData } from 'viem';
-import { 
-  Loader2, 
-  CheckCircle, 
+import {
   AlertCircle,
   ExternalLink,
-  TrendingUp,
-  Zap,
+  Loader2,
+  TrendingUp
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { encodeFunctionData, formatEther, parseEther } from 'viem';
 import { monad } from 'viem/chains';
+import { useAccount, useBalance, useChainId, usePublicClient, useSwitchChain, useWalletClient } from 'wagmi';
 
 // Mainnet addresses
 const CONFIG = {
@@ -382,7 +380,7 @@ const handleBuy = async () => {
   onClick={handleBuy}
   disabled={isPending || isConfirming || !amount || parseFloat(amount) <= 0 || (parseFloat(amount) > maxBalance && chainId === monad.id)}
   className={`
-    w-full py-2.5 rounded-md font-medium text-sm transition-all flex items-center justify-center gap-2
+    w-full hidden py-2.5 rounded-md font-medium text-sm transition-all items-center justify-center gap-2
     ${isPending || isConfirming || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > maxBalance
       ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
       : 'bg-white hover:bg-zinc-100 text-black'

@@ -4,8 +4,8 @@
 
 'use client';
 
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useCouncilStore } from '@/store/council';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Wifi, WifiOff } from 'lucide-react';
 
 export function Header() {
@@ -69,7 +69,7 @@ export function Header() {
                       return (
                         <button
                           onClick={openConnectModal}
-                          className="px-4 py-2 bg-accent-green text-black font-bold rounded-lg hover:bg-accent-green/80 transition-colors"
+                          className="hidden px-4 py-2 bg-accent-green text-black font-bold rounded-lg hover:bg-accent-green/80 transition-colors"
                         >
                           Connect Wallet
                         </button>
