@@ -421,9 +421,10 @@ function PredictionCard({
           {selectedOption && !isEnded && !userBet && (
             <div className="p-4 border-t border-zinc-800">
               {!isConnected ? (
-                <div className="hidden text-center py-4 flex-col items-center justify-center">
-                  <p className="text-zinc-500 mb-3">Connect wallet to place bet</p>
-                </div>
+                // <div className="hidden text-center py-4 flex-col items-center justify-center">
+                //   <p className="text-zinc-500 mb-3">Connect wallet to place bet</p>
+                // </div>
+                <></>
               ) : (
                 <>
                   {/* Selected Option */}

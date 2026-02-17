@@ -9,8 +9,7 @@ import {
   ChevronDown,
   Copy,
   ExternalLink,
-  LogOut,
-  Wallet,
+  LogOut
 } from "lucide-react";
 import { useState } from "react";
 import { useAccount, useBalance, useConnect, useDisconnect } from "wagmi";
@@ -131,7 +130,7 @@ export function ConnectWalletButton() {
 
   return (
     <div className="relative">
-      <button
+      {/* <button
         onClick={() => setShowDropdown(!showDropdown)}
         disabled={isPending}
         className="hidden items-center gap-2 bg-white hover:bg-zinc-100 text-black rounded-lg text-xs px-4 py-2 font-medium transition-all disabled:opacity-50"
@@ -147,7 +146,7 @@ export function ConnectWalletButton() {
             Connect Wallet
           </>
         )}
-      </button>
+      </button> */}
 
       {showDropdown && !isPending && (
         <>
